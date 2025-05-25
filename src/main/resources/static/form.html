@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프롬프트&이미지 생성 테스트</title>
+</head>
+<body>
+<h1>공연 프롬프트 생성</h1>
+<form id="promptForm">
+    <label for="title">공연 제목:</label><br>
+    <input type="text" id="title" name="title" required><br><br>
+
+    <label for="location">공연 장소:</label><br>
+    <input type="text" id="location" name="location" required><br><br>
+
+    <label for="date">공연 날짜:</label><br>
+    <input type="date" id="date" name="date" required><br><br>
+
+    <label for="genre">장르:</label><br>
+    <select id="genre" name="genre" required>
+        <option value="">--선택--</option>
+        <option value="뮤지컬">뮤지컬</option>
+        <option value="밴드">밴드</option>
+    </select><br><br>
+
+    <label for="cast">출연진 (쉼표로 구분):</label><br>
+    <input type="text" id="cast" name="cast" required><br><br>
+
+    <label for="review">관람 후기:</label><br>
+    <textarea id="review" name="review" rows="6" cols="50" required></textarea><br><br>
+
+    <button type="submit">프롬프트 생성 요청</button>
+</form>
+
+<h2>응답 결과</h2>
+<p><strong>생성된 프롬프트:</strong></p>
+<pre id="promptText"></pre>
+
+<p><strong>생성된 이미지:</strong></p>
+<img id="resultImage" alt="생성된 이미지" style="max-width: 500px; border: 1px solid #ccc; display: none;">
+
+
+
+<script>
+    document.getElementById("promptForm").addEventListener("submit", async function(event) {
+        event.preventDefault();
+
+        const castInput = document.getElementById("cast").value.split(",").map(name => name.trim());
+
+        const data = {
+            title: document.getElementById("title").value,
+            location: document.getElementById("location").value,
+            date: document.getElementById("date").value,
+            genre: document.getElementById("genre").value,
+            cast: castInput,
+            review: document.getElementById("review").value
+        };
+
+        try {
+            const response = await fetch("http://localhost:8080/generate-image", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            document.getElementById("promptText").textContent = result.prompt;
+
+            const imageElement = document.getElementById("resultImage");
+            imageElement.src = result.imageUrl;
+            if (result.imageUrl) {
+                imageElement.style.display = "block";
+            } else {
+                imageElement.style.display = "none";
+            }
+
+        } catch (error) {
+            document.getElementById("promptText").textContent = "에러 발생: " + error;
+
+            const imageElement = document.getElementById("resultImage");
+            imageElement.src = "";
+            imageElement.style.display = "none"; // 🎯 에러 시 숨김
+        }
+    });
+
+</script>
+
+</body>
+</html>
