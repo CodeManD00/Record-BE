@@ -68,5 +68,5 @@ String prompt = String.format(
 
 ## 📬 문의처
 
-팀장 이세연 (syys1944@ewhain.net)
-GitHub Issue 또는 Discussions를 통해 문의 가능
+- 팀장 이세연 (syys1944@ewhain.net)
+- GitHub Issue 또는 Discussions를 통해 문의 가능
