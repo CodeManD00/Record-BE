@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loading.style.display = "none";
     mainContent.style.display = "flex";
 
-    // 👇 처음으로 돌아가기 버튼 기능
+    //처음으로 돌아가기 버튼 기능
     document.getElementById("goBackButton").addEventListener("click", () => {
-        window.location.href = "form.html"; // 파일 이름이 form.html일 경우
+        window.location.href = "form.html";
     });
 });

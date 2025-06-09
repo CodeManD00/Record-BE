@@ -1,10 +1,14 @@
 document.getElementById("submitButton").addEventListener("click", async function () {
     const form = document.getElementById("promptForm");
+    const loading = document.getElementById("loadingScreen"); // 로딩화면 요소
 
     if (!form.checkValidity()) {
         form.reportValidity();
         return;
     }
+
+    //로딩 화면 표시
+    loading.style.display = "flex";
 
     const castInput = document.getElementById("cast").value.split(",").map(name => name.trim());
 
@@ -27,11 +31,16 @@ document.getElementById("submitButton").addEventListener("click", async function
         });
 
         const result = await response.json();
+
         localStorage.setItem("generatedPrompt", result.prompt);
         localStorage.setItem("generatedImageUrl", result.imageUrl);
-        window.location.href = "/result.html";
+
+        //결과 페이지로 이동
+        window.location.href = "result.html";
 
     } catch (error) {
         alert("에러가 발생했습니다: " + error.message);
+        //실패 시 로딩 화면 숨김
+        loading.style.display = "none";
     }
 });
