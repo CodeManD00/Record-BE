@@ -1,3 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://3.34.179.255:5432/recorddb
+    username: recorduser
+    password: your_db_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 단계에서는 update / 운영 시에는 validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
 cloud:
   aws:
     credentials:
