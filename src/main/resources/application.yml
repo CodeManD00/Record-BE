@@ -7,11 +7,12 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # 개발 단계에서는 update / 운영 시에는 validate
+      ddl-auto: update   # 개발 중엔 update, 운영 전에는 validate 추천
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 cloud:
   aws:
@@ -21,4 +22,4 @@ cloud:
     region:
       static: ap-northeast-2
     s3:
-      bucket: recording-buckett
+      bucket: recording-bucket
