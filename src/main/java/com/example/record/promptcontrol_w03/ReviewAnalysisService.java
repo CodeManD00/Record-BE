@@ -1,5 +1,5 @@
-// 이 클래스는 공연 후기를 GPT-4 API에 보내 분석하고,
-// 그 결과로 프롬프트 생성을 위한 핵심 요소들을 JSON 형태로 반환합니다.
+// ReviewAnalysisService: 공연 후기를 GPT-4 API에 보내 분석하고, 프롬프트 생성을 위한 요소들을 JSON 형태로 추출하는 서비스입니다.
+
 package com.example.record.promptcontrol_w03;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,12 +15,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-@Service // Spring이 이 클래스를 서비스로 인식해서 빈으로 등록하게 해주는 어노테이션입니다.
+@Service
 public class ReviewAnalysisService {
 
-    // application.properties에 설정된 OpenAI API 키를 주입받습니다.
     private final WebClient webClient;
 
+    // 생성자에서 WebClient를 초기화하며 OpenAI API 키를 Authorization 헤더에 설정
     public ReviewAnalysisService(@Value("${openai.api.key}") String apiKey) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.openai.com/v1")
@@ -29,10 +29,9 @@ public class ReviewAnalysisService {
                 .build();
     }
 
-    // 사용자의 후기(reviewText)를 받아 GPT-4에 전달하고 분석 결과를 반환하는 메서드입니다.
+    // 공연 후기를 GPT-4에게 분석 요청하고, 결과를 JSON → Map<String, Object> 형태로 반환
     public Map<String, Object> analyzeReview(String reviewText) {
-        // GPT에게 보낼 프롬프트 문장을 작성합니다.
-        // 사용자의 후기 내용을 포함한 형식으로 구성합니다.
+        // 후기 분석 요청용 프롬프트 구성
         String prompt = String.format("""
         다음 공연 후기를 분석하여 다음 항목을 JSON 형식으로 추출해줘.
         - emotion
@@ -48,42 +47,35 @@ public class ReviewAnalysisService {
             후기: %s
         """, reviewText);
 
-        // OpenAI API에 보낼 요청 본문(JSON)을 구성합니다.
+        // GPT-4 API에 전달할 요청 본문 구성
         Map<String, Object> body = Map.of(
-                // 사용할 모델은 gpt-4입니다.
                 "model", "gpt-4",
-                // messages는 ChatGPT 포맷으로, 시스템 메시지 없이 유저 메시지만 넣습니다.
                 "messages", List.of(
                         Map.of("role", "user", "content", prompt)
                 ),
-                // temperature는 창의성(랜덤성)을 조절하는 값으로, 0.7은 중간 정도의 무작위성을 의미합니다.
                 "temperature", 0.7
         );
 
-        // WebClient를 이용하여 GPT-4에게 POST 요청을 보냅니다.
+        // POST 요청 보내고 응답 문자열 받기
         String response = webClient.post()
-                // API 경로: /chat/completions (ChatGPT 방식 요청)
                 .uri("/chat/completions")
-                // 요청 본문(body) 설정
                 .bodyValue(body)
-                // 응답을 String 형태로 받아옵니다.
                 .retrieve()
                 .bodyToMono(String.class)
-                .block(); // block()은 비동기 결과를 동기로 기다리며, 여기선 단순히 동기적으로 처리
+                .block();
 
-        // JSON 응답을 파싱하기 위한 Jackson ObjectMapper 객체를 생성합니다.
         ObjectMapper mapper = new ObjectMapper();
 
-        // GPT 응답에서 우리가 필요한 실제 텍스트(내용)를 추출합니다.
-        // "/choices/0/message/content" 경로에 생성된 텍스트가 들어있습니다.
         try {
+            // 응답에서 content(프롬프트 결과 텍스트) 추출
             JsonNode json = mapper.readTree(response);
             String content = json.at("/choices/0/message/content").asText();
-            return mapper.readValue(content, new TypeReference<>() {}); // 그 텍스트는 우리가 기대한 JSON 형식이므로, 다시 JSON으로 파싱해서 Map으로 반환합니다.
+
+            // content 문자열은 JSON 형식이므로 다시 파싱하여 Map으로 반환
+            return mapper.readValue(content, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return Map.of("error", "JSON 파싱 실패");
         }
     }
 }
-
