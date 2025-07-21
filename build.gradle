@@ -36,6 +36,9 @@ dependencies {
 	implementation 'software.amazon.awssdk:s3'
 	implementation 'software.amazon.awssdk:auth'
 
+	//Google STT
+	implementation 'com.google.cloud:google-cloud-speech:4.2.0'
+
 	// Security + JWT
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
