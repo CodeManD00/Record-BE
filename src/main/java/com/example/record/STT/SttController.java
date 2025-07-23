@@ -1,5 +1,4 @@
-// SttController: 음성 파일을 업로드하여 텍스트로 변환(STT)하고, 요약 및 질문 생성을 통해 결과를 저장하고 조회하는 컨트롤러입니다.
-
+// 음성 파일을 업로드 받아 텍스트로 변환하고, 변환된 텍스트를 DB에 저장하며, 요약을 생성하는 컨트롤러입니다.
 package com.example.record.STT;
 
 import com.example.record.DB.User;
@@ -19,75 +18,77 @@ import java.util.UUID;
 @RequestMapping("/stt")
 public class SttController {
 
-    private final SttService sttService;                         // STT 변환 서비스
-    private final SttGptService sttGptService;                   // GPT 요약/질문 생성 서비스
-    private final TranscriptionRepository transcriptionRepository; // 변환 결과 저장소
+    private final SttService sttService; // 음성 파일을 텍스트로 변환하는 서비스
+    private final SttGptService sttGptService; // 텍스트 요약을 생성하는 서비스
+    private final TranscriptionRepository transcriptionRepository; // 데이터베이스와의 상호작용을 위한 리포지토리
 
-    // [1] 음성 파일 업로드 → STT 실행 → 변환 결과를 DB에 저장
+    // [1] 음성 파일 업로드 → 텍스트로 변환 → DB 저장 (요약 X)
     @PostMapping
     public ResponseEntity<String> transcribe(@RequestParam MultipartFile file,
                                              @AuthenticationPrincipal User user) throws Exception {
-        // 임시 파일로 저장
+        // UUID를 사용하여 고유한 파일 이름 생성
         String fileName = UUID.randomUUID() + ".wav";
-        String tempPath = "/tmp/" + fileName;
-        File tempFile = new File(tempPath);
+        File tempFile = new File("/tmp/" + fileName); // 임시 파일 경로 설정
+
+        // 업로드된 파일을 임시 파일로 저장
         file.transferTo(tempFile);
 
-        // 로컬 파일을 텍스트로 변환
-        String result = sttService.transcribeLocalFile(tempPath);
-        tempFile.delete(); // 변환 후 임시 파일 삭제
+        // STT 서비스를 통해 음성 파일을 텍스트로 변환
+        String result = sttService.transcribeLocalFile(tempFile.getAbsolutePath());
 
-        // DB에 변환 결과 저장
-        Transcription transcription = Transcription.builder()
+        // 임시 파일 삭제
+        tempFile.delete();
+
+        // 변환된 텍스트와 관련 정보를 DB에 저장
+        Transcription t = Transcription.builder()
                 .fileName(fileName)
                 .resultText(result)
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .build();
-        transcriptionRepository.save(transcription);
+        transcriptionRepository.save(t);
 
+        // 변환된 텍스트 반환
         return ResponseEntity.ok(result);
     }
 
-    // [2] 로그인한 사용자의 STT 기록 리스트 조회
+    // [2] 요약 생성 (질문 제거됨)
+    @PostMapping("/gpt")
+    public ResponseEntity<GptResponse> summarize(@RequestParam Long id,
+                                                 @AuthenticationPrincipal User user) {
+        // 주어진 ID로 기록을 조회하고, 해당 사용자의 기록인지 확인
+        Transcription t = transcriptionRepository.findById(id)
+                .filter(tr -> tr.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new RuntimeException("해당 기록이 없거나 권한이 없습니다."));
+
+        // STT GPT 서비스를 통해 텍스트 요약 생성
+        String summary = sttGptService.summarize(t.getResultText());
+
+        // 요약을 기록에 저장
+        t.setSummary(summary);
+        transcriptionRepository.save(t);
+
+        // 생성된 요약 반환
+        return ResponseEntity.ok(new GptResponse(summary));
+    }
+
+    // [3] 기록 조회
     @GetMapping("/list")
-    public ResponseEntity<List<TranscriptionResponse>> listMyTranscriptions(
-            @AuthenticationPrincipal User user) {
+    public ResponseEntity<List<TranscriptionResponse>> list(@AuthenticationPrincipal User user) {
+        // 사용자의 모든 기록을 조회
         List<Transcription> transcriptions = transcriptionRepository.findByUser(user);
 
-        // Transcription → TranscriptionResponse로 변환
+        // 조회된 기록을 응답 형식으로 변환
         List<TranscriptionResponse> response = transcriptions.stream()
                 .map(t -> new TranscriptionResponse(
                         t.getId(),
                         t.getFileName(),
                         t.getResultText(),
                         t.getCreatedAt(),
-                        t.getSummary(),
-                        t.getQuestion()
-                ))
-                .toList();
+                        t.getSummary()
+                )).toList();
 
+        // 변환된 기록 목록 반환
         return ResponseEntity.ok(response);
-    }
-
-    // [3] 선택한 기록에 대해 GPT 요약 및 질문 생성 → DB에 저장 후 결과 반환
-    @PostMapping("/gpt")
-    public ResponseEntity<GptResponse> summarizeAndQuestion(@RequestParam Long id,
-                                                            @AuthenticationPrincipal User user) {
-        // 본인 기록인지 확인 및 조회
-        Transcription t = transcriptionRepository.findById(id)
-                .filter(tr -> tr.getUser().getId().equals(user.getId()))
-                .orElseThrow(() -> new RuntimeException("해당 기록이 없거나 권한이 없습니다."));
-
-        // GPT를 통해 요약 및 질문 생성
-        String summary = sttGptService.summarize(t.getResultText());
-        String question = sttGptService.generateQuestion(t.getResultText());
-
-        // 결과 저장
-        t.setSummary(summary);
-        t.setQuestion(question);
-        transcriptionRepository.save(t);
-
-        return ResponseEntity.ok(new GptResponse(summary, question));
     }
 }
