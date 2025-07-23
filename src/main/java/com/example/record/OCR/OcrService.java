@@ -8,13 +8,12 @@ import com.google.cloud.vision.v1.Feature;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 @Service
 public class OcrService {
@@ -43,9 +42,7 @@ public class OcrService {
             BatchAnnotateImagesResponse response = vision.batchAnnotateImages(List.of(request));
 
             // 결과에서 전체 추출 텍스트 가져오기
-            String extracted = response.getResponses(0).getFullTextAnnotation().getText();
-
-            return extracted;
+            return response.getResponses(0).getFullTextAnnotation().getText();
         }
     }
 }

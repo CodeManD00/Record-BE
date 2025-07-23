@@ -1,7 +1,7 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.5.0'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springframework.boot' version '3.2.5' // 또는 최신 안정 버전 (3.5.0은 milestone일 수 있음)
+	id 'io.spring.dependency-management' version '1.1.5'
 }
 
 group = 'com.example'
@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23)
+		languageVersion = JavaLanguageVersion.of(23) // Java 23 사용
 	}
 }
 
@@ -24,38 +24,41 @@ repositories {
 }
 
 dependencies {
-	// Spring + DB
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// ✅ Spring
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-	implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
-	implementation 'org.postgresql:postgresql:42.6.0' // ✅ PostgreSQL 드라이버 추가
+	implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient용
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
-	// AWS SDK v2 (S3, Credentials 등)
+	// ✅ Database
+	implementation 'org.postgresql:postgresql:42.6.0'
+	implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+
+	// ✅ Google Cloud
+	implementation 'com.google.cloud:google-cloud-vision:3.30.0' // OCR
+	implementation 'com.google.cloud:google-cloud-speech:4.2.0'  // STT
+
+	// ✅ AWS SDK v2
 	implementation platform('software.amazon.awssdk:bom:2.25.11')
 	implementation 'software.amazon.awssdk:s3'
-	implementation 'software.amazon.awssdk:auth'
+	implementation 'software.amazon.awssdk:sts' // auth 대신 sts 권장
 
-	//Google STT
-	implementation 'com.google.cloud:google-cloud-speech:4.2.0'
-
-	// Security + JWT
-	implementation 'org.springframework.boot:spring-boot-starter-security'
+	// ✅ JWT (jjwt)
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
-	// Lombok
+	// ✅ Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// Devtools & Test
+	// ✅ 개발 편의
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	// ✅ 테스트
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'com.google.cloud:google-cloud-vision:3.30.0'
 }
-
 
 tasks.named('test') {
 	useJUnitPlatform()
