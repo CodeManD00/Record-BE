@@ -1,5 +1,3 @@
-// SecurityConfig: Spring Security 설정 클래스. JWT 기반 인증 및 권한 관리를 설정합니다.
-
 package com.example.record.DB;
 
 import lombok.RequiredArgsConstructor;
@@ -14,7 +12,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -36,18 +33,21 @@ public class SecurityConfig {
         return http
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (JWT 사용 시 일반적)
                 .authorizeHttpRequests(auth -> auth
-                        // 회원가입과 로그인은 누구나 접근 가능
+                        // 인증 없이 접근 가능한 경로
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        // /admin/** 경로는 ADMIN 권한 필요
+                        .requestMatchers(HttpMethod.POST, "/ocr/image").permitAll()     // ✅ OCR 허용
+                        .requestMatchers(HttpMethod.POST, "/stt/audio").permitAll()     // ✅ STT 허용
+                        .requestMatchers(HttpMethod.GET, "/stt/gpt").permitAll()        // ✅ GPT 요약 테스트용 허용 (선택)
+                        // 관리자 전용 경로
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // 그 외 요청은 인증만 필요
+                        // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 )
                 // 세션을 사용하지 않고 JWT로만 인증 처리
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // JWT 인증 필터 등록 (기존 UsernamePasswordAuthenticationFilter 앞에 위치시킴)
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository), UsernamePasswordAuthenticationFilter.class)
+                //.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
