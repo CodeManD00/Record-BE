@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(23) // Java 23 사용
+		languageVersion = JavaLanguageVersion.of(21) // Java 23 사용
 	}
 }
 
