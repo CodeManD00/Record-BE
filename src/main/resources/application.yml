@@ -1,7 +1,14 @@
+#spring:
+# datasource:
+#   url: jdbc:postgresql://3.34.179.255:5432/recorddb
+#   username: recorduser
+#   password: recordpass
+#   driver-class-name: org.postgresql.Driver
+
 spring:
   datasource:
-    url: jdbc:postgresql://3.34.179.255:5432/recorddb
-    username: recorduser
+    url: jdbc:postgresql://localhost:5432/recorddb
+    username: postgres
     password: recordpass
     driver-class-name: org.postgresql.Driver
 
@@ -26,4 +33,5 @@ cloud:
 
 google:
   credentials:
-    path: C:\Users\sherl\CodeManDoo\src\main\resources\gcp-stt-key.json
+    path: src/main/resources/gcp-stt-key.json
+
