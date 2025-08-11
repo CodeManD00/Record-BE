@@ -1,5 +1,6 @@
 // S3Controller: 클라이언트로부터 업로드된 파일을 받아 AWS S3에 저장하고, 업로드된 파일의 URL을 반환하는 컨트롤러입니다.
 
+/*
 package com.example.record.AWS;
 
 import lombok.RequiredArgsConstructor;
@@ -33,3 +34,4 @@ public class S3Controller {
         }
     }
 }
+*/

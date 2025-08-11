@@ -63,3 +63,10 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+tasks.named('bootRun') {
+	environment "OPENAI_API_KEY", System.getenv("OPENAI_API_KEY")
+}
+
+tasks.named('bootRun') {
+	environment "OPENAI_API_KEY", "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"  // 여기에 실제 키를 직접 넣기
+}

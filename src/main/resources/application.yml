@@ -35,3 +35,6 @@ google:
   credentials:
     path: src/main/resources/gcp-stt-key.json
 
+openai:
+  api:
+    key: ${OPENAI_API_KEY}
