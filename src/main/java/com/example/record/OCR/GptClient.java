@@ -1,43 +1,78 @@
-// GptClient: OpenAI GPT API를 호출하여 공연 정보를 JSON 형식으로 추출하는 기능을 담당하는 컴포넌트입니다.
-
 package com.example.record.OCR;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 @Component
 @RequiredArgsConstructor
 public class GptClient {
 
-    // WebClient: GPT API 호출을 위한 비동기 HTTP 클라이언트
-    private final WebClient webClient = WebClient.builder()
-            .baseUrl("https://api.openai.com/v1/chat/completions")
-            .build();
-
-    // application.yml 또는 .properties 파일에서 주입되는 OpenAI API 키
     @Value("${openai.api.key}")
     private String apiKey;
 
-    // 프롬프트를 기반으로 GPT에 요청을 보내고 응답(JSON 문자열)을 반환
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    // WebClient 재사용 + Authorization 동적 주입
+    private final WebClient openAi = WebClient.builder()
+            .baseUrl("https://api.openai.com/v1")
+            .clientConnector(new ReactorClientHttpConnector(HttpClient.create()))
+            .defaultHeader("Content-Type", "application/json")
+            .filter((request, next) -> {
+                ClientRequest mutated = ClientRequest.from(request)
+                        .headers(h -> h.setBearerAuth(apiKey))
+                        .build();
+                return next.exchange(mutated);
+            })
+            .build();
+
+    /**
+     * 프롬프트를 보내고 chat.completions 응답의 choices[0].message.content 텍스트를 반환
+     * 파싱 실패 시 원본 응답 문자열을 그대로 반환
+     */
     public String getStructuredJsonFromPrompt(String prompt) {
-        // GPT 요청에 사용될 JSON 본문 생성
-        String requestBody = """
+        String body = """
         {
           "model": "gpt-4",
-          "messages": [{"role": "user", "content": "%s"}],
+          "messages": [{"role": "user", "content": %s}],
           "temperature": 0.3
         }
-        """.formatted(prompt.replace("\"", "\\\"").replace("\n", "\\n"));
+        """.formatted(quote(prompt));
 
-        // WebClient로 POST 요청 전송 → 응답을 문자열로 반환
-        return webClient.post()
-                .header("Authorization", "Bearer " + apiKey)
-                .header("Content-Type", "application/json")
-                .bodyValue(requestBody)
+        String raw = openAi.post()
+                .uri("/chat/completions")
+                .bodyValue(body)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+
+        try {
+            JsonNode root = objectMapper.readTree(raw);
+            JsonNode choices = root.path("choices");
+            if (choices.isArray() && choices.size() > 0) {
+                JsonNode content = choices.get(0).path("message").path("content");
+                if (content.isTextual()) return content.asText();
+            }
+            return raw; // 예상 구조가 아닐 때 원문 반환
+        } catch (Exception e) {
+            return raw; // 파싱 실패 시 원문 반환
+        }
+    }
+
+    // JSON 안전 문자열로 감싸기
+    private static String quote(String s) {
+        if (s == null) return "\"\"";
+        // 쌍따옴표/역슬래시/개행 등 이스케이프
+        String escaped = s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n");
+        return "\"" + escaped + "\"";
     }
 }
