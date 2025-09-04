@@ -8,9 +8,6 @@ public class ImageOptions {
     private List<String> colorPalette;     // e.g., ["deep blue","purple","gold"]
     private String lighting;               // e.g., "cinematic backlight"
     private String mood;                   // e.g., "melancholic"
-    private String camera;                 // e.g., "low angle"
-    private String composition;            // e.g., "rule of thirds"
-    private List<String> negativeTerms;    // e.g., ["text","letters","watermark","logo"]
     private String variationStrategy = "none"; // "none" | "prompt-jitter" (확장 여지)
 
     // getters/setters
@@ -25,15 +22,6 @@ public class ImageOptions {
 
     public String getMood() { return mood; }
     public void setMood(String mood) { this.mood = mood; }
-
-    public String getCamera() { return camera; }
-    public void setCamera(String camera) { this.camera = camera; }
-
-    public String getComposition() { return composition; }
-    public void setComposition(String composition) { this.composition = composition; }
-
-    public List<String> getNegativeTerms() { return negativeTerms; }
-    public void setNegativeTerms(List<String> negativeTerms) { this.negativeTerms = negativeTerms; }
 
     public String getVariationStrategy() { return variationStrategy; }
     public void setVariationStrategy(String variationStrategy) { this.variationStrategy = variationStrategy; }
