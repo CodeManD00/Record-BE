@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -24,12 +25,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserRepository userRepository;
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-    // 인증 없이 통과시킬 경로들
+    // 인증 없이 통과시킬 경로 (옵션 A: /ocr 단일 엔드포인트)
     private static final String[] WHITELIST = new String[]{
             "/auth/**",
-            "/ocr/image",
-            "/stt/audio",
-            "/stt/gpt",
+
+            // ✅ OCR: /ocr 변형 전부 + context-path 포함 케이스까지
+            "/ocr", "/ocr/", "/ocr/**",
+            "/**/ocr", "/**/ocr/", "/**/ocr/**",
+
+            // 🔓 STT 테스트 때만 잠깐 추가(운영 기본은 잠금)
+            // "/stt",
+            // "/stt/gpt",
+            // "/stt/list",
+
             "/api/image/**"
     };
 
@@ -38,15 +46,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String uri = request.getRequestURI();
-        for (String pattern : WHITELIST) {
-            if (matcher.match(pattern, uri)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+        final String uri = request.getRequestURI();
+        final boolean whitelisted = Arrays.stream(WHITELIST).anyMatch(p -> matcher.match(p, uri));
+        // 간단 디버그 로그 (원하면 log.debug로 교체)
+        System.out.println("[JwtAuthFilter] " + request.getMethod() + " " + uri + " -> whitelisted=" + whitelisted);
+
+        if (whitelisted) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        String authHeader = request.getHeader("Authorization");
+        final String authHeader = request.getHeader("Authorization");
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);

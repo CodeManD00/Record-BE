@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,23 +24,23 @@ public class OcrController {
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     /**
-     * POST /ocr/image : 이미지 업로드 → OCR 텍스트만 반환
+     * ✅ POST /ocr : 이미지 업로드 → OCR 텍스트만 반환
      */
-    @PostMapping("/image")
-    public ResponseEntity<String> uploadImage(@RequestParam MultipartFile file) throws Exception {
+    @PostMapping
+    public ResponseEntity<OcrResponse> uploadImage(@RequestParam MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
-            return ResponseEntity.ok(text == null ? "" : text);
+            return ResponseEntity.ok(new OcrResponse(text == null ? "" : text));
         } finally {
             if (tempFile.exists()) tempFile.delete();
         }
     }
 
     /**
-     * POST /ocr/image/structured : OCR → GPT 구조화 → PerformanceInfo 반환
+     * ✅ POST /ocr/structured : OCR → GPT 구조화 → PerformanceInfo 반환
      */
-    @PostMapping("/image/structured")
+    @PostMapping("/structured")
     public ResponseEntity<PerformanceInfo> uploadAndParse(@RequestParam MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
@@ -57,14 +58,12 @@ public class OcrController {
                     %s
                     """.formatted(text == null ? "" : text);
 
-            // 3) GPT 호출 → JSON 문자열(혹은 텍스트) 수신
+            // 3) GPT 호출 → JSON 문자열 수신
             String json = gptClient.getStructuredJsonFromPrompt(prompt);
 
             // 4) JSON → DTO 매핑
-            //    만약 모델이 문자열 앞/뒤에 코드블록을 붙이면 제거 시도
             String cleaned = stripCodeFence(json).trim();
 
-            // JSON 객체를 바로 PerformanceInfo로 매핑 시도
             PerformanceInfo info;
             try {
                 info = om.readValue(cleaned, PerformanceInfo.class);
@@ -117,4 +116,7 @@ public class OcrController {
     private static String str(Object o) {
         return o == null ? "" : String.valueOf(o);
     }
+
+    // OCR 텍스트 단순 반환용 DTO
+    public record OcrResponse(String text) {}
 }
