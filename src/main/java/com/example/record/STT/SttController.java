@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,14 +27,13 @@ public class SttController {
                                              @AuthenticationPrincipal User user) throws Exception {
         if (user == null) return ResponseEntity.status(401).body("Unauthorized");
 
-        // 확장자 추출 (.wav/.mp3… 없으면 .tmp)
+        // 원본 확장자 보존(없으면 .tmp)
         String suffix = ".tmp";
         String original = file.getOriginalFilename();
         if (original != null && original.lastIndexOf('.') != -1) {
-            suffix = original.substring(original.lastIndexOf('.')); // 포함된 점부터
+            suffix = original.substring(original.lastIndexOf('.'));
         }
 
-        // OS 독립적인 안전 임시 파일
         Path temp = Files.createTempFile("stt_", suffix);
         try {
             file.transferTo(temp.toFile());
@@ -56,26 +54,28 @@ public class SttController {
         }
     }
 
-    // [2] 요약 생성 (id로 본인 기록만 허용)
+    // 회고 요약 생성 (본인 기록만)
     @PostMapping("/gpt")
     public ResponseEntity<GptResponse> summarize(@RequestParam Long id,
                                                  @AuthenticationPrincipal User user) {
-        if (user == null) return ResponseEntity.status(401).build();
+        if (user == null) {
+            return ResponseEntity.status(401).body(new GptResponse("Unauthorized"));
+        }
 
         return transcriptionRepository.findById(id)
                 .map(t -> {
                     if (!t.getUser().getId().equals(user.getId())) {
-                        return ResponseEntity.status(403).build();
+                        return ResponseEntity.status(403).body(new GptResponse("Forbidden"));
                     }
                     String summary = sttGptService.summarize(t.getResultText());
                     t.setSummary(summary);
                     transcriptionRepository.save(t);
                     return ResponseEntity.ok(new GptResponse(summary));
                 })
-                .orElseGet(() -> ResponseEntity.status(404).build());
+                .orElseGet(() -> ResponseEntity.status(404).body(new GptResponse("Not Found")));
     }
 
-    // [3] 내 기록 조회
+    // 내 기록 목록 조회
     @GetMapping("/list")
     public ResponseEntity<List<TranscriptionResponse>> list(@AuthenticationPrincipal User user) {
         if (user == null) return ResponseEntity.status(401).build();

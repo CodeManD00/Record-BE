@@ -1,4 +1,4 @@
-package com.example.record.promptcontrol_w03.dto;
+package com.example.record.promptcontrol_w03;
 
 import com.example.record.promptcontrol_w03.dto.ImageOptions;
 
