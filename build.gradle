@@ -2,6 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.2.5'
 	id 'io.spring.dependency-management' version '1.1.5'
+	// ⚠️ Kotlin 안 쓰면 제거
+	// id 'org.jetbrains.kotlin.jvm'
 }
 
 group = 'com.example'
@@ -17,7 +19,6 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
-	// 🔽 전역 exclude 추가
 	all {
 		exclude group: 'commons-logging', module: 'commons-logging'
 	}
@@ -29,18 +30,18 @@ repositories {
 
 dependencies {
 	// Spring Boot
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'org.springframework.boot:spring-boot-starter-web'       // MVC (Tomcat)
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'   // WebClient/Reactive
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-validation' // ✅ DTO 검증(권장)
+	// implementation 'org.springframework.boot:spring-boot-starter-actuator' // 운영 모니터링(선택)
 
 	// DB
-	implementation 'org.postgresql:postgresql:42.6.0'
-	// ⛳️ 이 줄은 starter-data-jpa가 이미 제공하므로 보통 불필요합니다(선택):
-	// implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+	runtimeOnly 'org.postgresql:postgresql:42.6.0' // ✅ runtimeOnly 권장(implementation도 무방)
 
 	// Google Cloud
-	implementation 'com.google.cloud:google-cloud-vision:3.30.0'
+	implementation 'com.google.cloud:google-cloud-vision:3.36.0'  // ✅ 업그레이드
 	implementation 'com.google.cloud:google-cloud-speech:4.2.0'
 
 	// AWS SDK v2
@@ -53,9 +54,15 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+	// Jackson (starter-web에 들어있어서 생략 가능)
+	// implementation 'com.fasterxml.jackson.core:jackson-databind'
+
 	// Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// @ConfigurationProperties 자동완성/메타(선택)
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
 	// Dev
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -63,6 +70,9 @@ dependencies {
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// ⚠️ Kotlin 안 쓰면 제거
+	// implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 tasks.named('test') {
@@ -71,4 +81,10 @@ tasks.named('test') {
 
 tasks.named('bootRun') {
 	environment "OPENAI_API_KEY", System.getenv("OPENAI_API_KEY")
+}
+
+// (선택) 컴파일 옵션 깔끔하게
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.compilerArgs << '-parameters'
 }

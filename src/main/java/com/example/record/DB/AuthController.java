@@ -1,12 +1,4 @@
-// AuthController: 사용자 회원가입과 로그인 요청을 처리하고 JWT 토큰을 발급하는 인증 컨트롤러입니다.
-
 package com.example.record.DB;
-
-import com.example.record.DB.User;
-import com.example.record.DB.UserRepository;
-import com.example.record.DB.SignupRequest;
-import com.example.record.DB.LoginRequest;
-import com.example.record.DB.JwtUtil;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,18 +36,27 @@ public class AuthController {
 
     // 로그인 요청 처리 및 JWT 토큰 발급
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
         // 이메일로 사용자 조회
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElse(null);
+        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
         // 사용자 존재 여부 및 비밀번호 확인
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).body("이메일 또는 비밀번호가 올바르지 않습니다.");
+            return ResponseEntity.status(401).build();
         }
 
         // JWT 토큰 생성 및 반환
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        return ResponseEntity.ok(token);
+
+        TokenResponse body = new TokenResponse(
+                token,
+                "Bearer",
+                60L * 60 * 1000, // 현재 JwtUtil의 만료시간과 일치(1시간)
+                user.getRole()
+        );
+
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + token)
+                .body(body);
     }
 }

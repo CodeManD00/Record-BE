@@ -14,8 +14,6 @@ import java.nio.file.Path;
 @Service
 public class SttService {
 
-    // PATH에 ffmpeg가 잡혀 있으면 기본값 "ffmpeg" 사용
-    // 별도 경로를 쓰고 싶으면 application.yml에 stt.ffmpeg.path 로 지정
     @Value("${stt.ffmpeg.path:ffmpeg}")
     private String ffmpegPath;
 
@@ -25,18 +23,16 @@ public class SttService {
 
         ProcessBuilder pb = new ProcessBuilder(
                 ffmpegPath,
-                "-y",                       // 덮어쓰기
-                "-i", inputFile.toString(), // 입력
-                "-ar", "16000",             // 16kHz
-                "-ac", "1",                 // mono
-                "-c:a", "pcm_s16le",        // PCM 16-bit little endian
-                outputFile.toString()       // 출력
+                "-y",
+                "-i", inputFile.toString(),
+                "-ar", "16000",
+                "-ac", "1",
+                "-c:a", "pcm_s16le",
+                outputFile.toString()
         );
         pb.redirectErrorStream(true);
-
         Process p = pb.start();
 
-        // 로그 캡처(디버깅용)
         StringBuilder log = new StringBuilder();
         try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
