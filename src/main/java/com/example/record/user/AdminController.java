@@ -1,4 +1,4 @@
-package com.example.record.DB;
+package com.example.record.user;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

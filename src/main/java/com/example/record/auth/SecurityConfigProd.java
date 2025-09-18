@@ -1,5 +1,6 @@
-package com.example.record.DB;
+package com.example.record.auth;
 
+import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,24 +29,20 @@ public class SecurityConfigProd {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 공개 엔드포인트 (운영 최소 공개)
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
 
-                        // 운영에서는 보호
-                        .requestMatchers("/ocr").authenticated()
+                        // 운영 보호
+                        .requestMatchers("/ocr/**").authenticated()
                         .requestMatchers("/stt/**").authenticated()
 
-                        // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        // 그 외 인증
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // JWT 필터
+        // 운영: JWT 필터 활성
         http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
                 UsernamePasswordAuthenticationFilter.class);
 

@@ -1,5 +1,7 @@
-package com.example.record.DB;
+package com.example.record.auth;
 
+import com.example.record.user.User;
+import com.example.record.user.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,13 +29,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        final String uri = request.getRequestURI();
-        final String method = request.getMethod();
-        System.out.println("[JwtAuthFilter] " + method + " " + uri);
-
         final String authHeader = request.getHeader("Authorization");
 
-        // 토큰이 없으면 다음 필터로 넘김 → 접근 허용/차단은 SecurityFilterChain에서 판단
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -49,9 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (user != null) {
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(
-                                    user,
-                                    null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                                    user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
                             );
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);

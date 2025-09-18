@@ -1,4 +1,4 @@
-package com.example.record.DB;
+package com.example.record.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

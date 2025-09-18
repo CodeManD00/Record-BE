@@ -2,7 +2,7 @@
 
 package com.example.record.STT;
 
-import com.example.record.DB.User;
+import com.example.record.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 

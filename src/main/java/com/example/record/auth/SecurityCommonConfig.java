@@ -1,4 +1,4 @@
-package com.example.record.DB;
+package com.example.record.auth;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,13 +14,9 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 @RequiredArgsConstructor
 public class SecurityCommonConfig {
 
-    // 비밀번호 인코더
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
-    // 401 응답 일관화
     @Bean
     public AuthenticationEntryPoint authEntryPoint() {
         return (request, response, e) -> {
@@ -30,7 +26,6 @@ public class SecurityCommonConfig {
         };
     }
 
-    // AuthenticationManager
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

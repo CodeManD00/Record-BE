@@ -1,13 +1,14 @@
+// com/example/record/STT/TranscriptionResponse.java
 package com.example.record.STT;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-// 클라이언트에 전달하는 STT 기록 DTO
 public record TranscriptionResponse(
         Long id,
         String fileName,
         String resultText,
         LocalDateTime createdAt,
-        String summary
-
+        String summary,
+        List<String> questions
 ) {}

@@ -1,7 +1,7 @@
 package com.example.record;
 
 
-import com.example.record.DB.User;
+import com.example.record.user.User;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 

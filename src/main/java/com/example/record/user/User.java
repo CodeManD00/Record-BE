@@ -1,4 +1,4 @@
-package com.example.record.DB;
+package com.example.record.user;
 
 import jakarta.persistence.*;
 import lombok.*;

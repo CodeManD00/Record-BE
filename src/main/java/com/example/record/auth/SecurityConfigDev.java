@@ -1,4 +1,4 @@
-package com.example.record.DB;
+package com.example.record.auth;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,9 +18,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfigDev {
 
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final AuthenticationEntryPoint authEntryPoint;
+    private final DevAuthBypassFilter devAuthBypassFilter;
 
     @Bean
     public SecurityFilterChain filterChainDev(HttpSecurity http) throws Exception {
@@ -28,29 +27,13 @@ public class SecurityConfigDev {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 공개 엔드포인트 (개발 테스트 편의)
-                        .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-
-                        .requestMatchers("/ocr/**").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/stt").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/stt/gpt").permitAll()
-                        .requestMatchers(HttpMethod.GET,  "/stt/list").permitAll()
-
-                        .requestMatchers("/api/image/**").permitAll()
-
-                        // 관리자 전용
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-
-                        // 그 외 인증
-                        .anyRequest().authenticated()
+                        // dev: 전부 허용
+                        .anyRequest().permitAll()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // JWT 필터
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
-                UsernamePasswordAuthenticationFilter.class);
+        // dev: 가짜 인증 주입(있어도 되고 없어도 됨)
+        http.addFilterBefore(devAuthBypassFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -3,7 +3,7 @@
 
 package com.example.record.STT;
 
-import com.example.record.DB.User;
+import com.example.record.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
