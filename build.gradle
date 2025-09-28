@@ -67,6 +67,11 @@ dependencies {
 	// Dev
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+	//open ai whisper
+	implementation 'org.springframework.boot:spring-boot-starter-webflux' // WebClient
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// (선택) 파일 확장/타입 판별 시 도움이 되면 Apache Tika 등 추가
+
 	// Test
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

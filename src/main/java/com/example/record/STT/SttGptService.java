@@ -33,6 +33,9 @@ public class SttGptService {
                     .build())
             .build();
 
+    /**
+     * 기존 요약 메서드 (그대로 유지)
+     */
     public String summarize(String transcript) {
         String prompt = """
                 다음은 공연 관람 후 음성 기록입니다. 핵심 내용을 3~5문장으로 간결하고 자연스럽게 요약해 주세요.
@@ -46,7 +49,9 @@ public class SttGptService {
         return callChatGpt(prompt);
     }
 
-    /** 후기 기반 질문 생성: JSON 배열(List<String>)만 반환하도록 유도 */
+    /**
+     * 기존 질문 생성 메서드 (그대로 유지)
+     */
     public List<String> generateQuestions(String transcript) {
         String prompt = """
                 다음은 한 관객의 공연 관람 후기 원문입니다. 이 후기를 바탕으로
@@ -81,6 +86,50 @@ public class SttGptService {
         }
     }
 
+    /**
+     * 새로 추가: 여러 질문-답변을 통합하여 최종 후기 생성
+     */
+    public String mergeIntoFinalReview(String qaText) {
+        String prompt = """
+                다음은 공연 관람 후기와 추가 질문-답변입니다.
+                이를 하나의 통합된, 자연스러운 공연 후기로 재구성해 주세요.
+                
+                요구사항:
+                - 모든 내용을 포함하되, 자연스러운 하나의 글로 통합
+                - 중복 내용 제거하고 논리적 흐름으로 재구성
+                - 구체적인 장면, 감정, 평가를 살려서 작성
+                - 공연 후기 형식 유지 (도입-본론-결론)
+                - 300~500자 내외
+                - 존댓말 사용
+                
+                원문:
+                """ + qaText;
+
+        return callChatGpt(prompt);
+    }
+
+    /**
+     * 새로 추가: 간단한 후기 품질 개선
+     * STT로 받은 산만한 텍스트를 정돈된 후기로 변환
+     */
+    public String improveReview(String roughText) {
+        String prompt = """
+                다음은 공연 직후 녹음한 즉흥적인 감상입니다.
+                이를 SNS나 블로그에 올릴 수 있는 정돈된 후기로 다듬어 주세요.
+                
+                요구사항:
+                - 원본의 감정과 주요 내용 유지
+                - 문법과 문장 구조 개선
+                - 구어체를 문어체로 변환
+                - 200~300자 내외
+                - 해시태그 3~5개 추가
+                
+                원문:
+                """ + roughText;
+
+        return callChatGpt(prompt);
+    }
+
     @SuppressWarnings("unchecked")
     private String callChatGpt(String prompt) {
         Map<String, Object> request = Map.of(
@@ -92,7 +141,7 @@ public class SttGptService {
         Map<String, Object> response = webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("/chat/completions").build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .headers(h -> h.setBearerAuth(apiKey))   // ✅ 여기서만 Bearer 설정
+                .headers(h -> h.setBearerAuth(apiKey))
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(Map.class)
@@ -118,7 +167,9 @@ public class SttGptService {
         }
     }
 
-    /** JSON 배열만 반환하도록 더 강하게 유도 */
+    /**
+     * JSON 배열만 반환하도록 더 강하게 유도
+     */
     @SuppressWarnings("unchecked")
     private String callChatGptStrictJson(String prompt) {
         Map<String, Object> request = Map.of(
@@ -134,7 +185,7 @@ public class SttGptService {
         Map<String, Object> response = webClient.post()
                 .uri(uriBuilder -> uriBuilder.path("/chat/completions").build())
                 .contentType(MediaType.APPLICATION_JSON)
-                .headers(h -> h.setBearerAuth(apiKey))   // ✅ 여기서만 Bearer 설정
+                .headers(h -> h.setBearerAuth(apiKey))
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(Map.class)
