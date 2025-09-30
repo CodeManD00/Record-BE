@@ -4,8 +4,8 @@ import com.example.record.user.User;
 import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -17,30 +17,37 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<String> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
         }
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
+        }
+
         User user = User.builder()
+                .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
-                .role("USER")
                 .build();
+
         userRepository.save(user);
-        return ResponseEntity.ok("회원가입 성공");
+
+        return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<TokenResponse> login(@RequestBody LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(401).build();
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("아이디를 찾을 수 없습니다."));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
-        TokenResponse body = new TokenResponse(token, "Bearer", 60L * 60 * 1000, user.getRole());
-        return ResponseEntity.ok()
-                .header("Authorization", "Bearer " + token)
-                .body(body);
+
+        String token = jwtUtil.generateToken(user.getUsername());
+
+        return ResponseEntity.ok(new TokenResponse(token));
     }
 }

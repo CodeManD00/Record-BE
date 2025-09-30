@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,172 +22,88 @@ public class SttController {
     private final SttService sttService;
     private final SttGptService sttGptService;
     private final TranscriptionRepository repo;
-    private final QuestionService questionService; // 새로 추가
 
     /**
-     * 1. 순수 STT만 수행 (저장 없이)
-     * 프론트에서 임시로 텍스트만 필요할 때 사용
+     * 1) STT만 수행 (저장 없음) → TranscriptionResponse로 임시 스냅샷 반환
      */
     @PostMapping("/transcribe-only")
-    public ResponseEntity<?> transcribeOnly(@RequestParam("file") MultipartFile file) throws Exception {
+    public ResponseEntity<?> transcribeOnly(@RequestParam("file") MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("파일이 비어 있습니다.");
+            return ResponseEntity.badRequest().body("File is empty");
         }
-
-        String original = file.getOriginalFilename();
-        String suffix = resolveSuffix(original);
+        final String original = file.getOriginalFilename();
+        final String suffix = resolveSuffix(original);
 
         try {
             byte[] bytes = file.getBytes();
             bytes = sttService.maybeReencodeToM4a(bytes, suffix);
 
-            String result = whisperService.transcribe(bytes, original, "ko");
-            if (!StringUtils.hasText(result)) {
+            String transcript = whisperService.transcribe(bytes, original, "ko");
+            if (!StringUtils.hasText(transcript)) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body("음성에서 텍스트를 추출하지 못했습니다.");
+                        .body("Failed to extract text from audio");
             }
 
-            return ResponseEntity.ok(Map.of(
-                    "text", result,
-                    "fileName", original != null ? original : "uploaded_audio"
-            ));
+            TranscriptionResponse resp = TranscriptionResponse.builder()
+                    .id(null)
+                    .fileName(original != null ? original : "uploaded_audio")
+                    .createdAt(LocalDateTime.now())
+                    .transcript(transcript)
+                    .summary(null)
+                    .questions(null)
+                    .finalReview(null)
+                    .build();
+
+            return ResponseEntity.ok(resp);
+
         } catch (IllegalArgumentException tooBig) {
             return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(tooBig.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(422).body("음성에서 텍스트를 추출하지 못했습니다. " + e.getMessage());
+            return ResponseEntity.status(422).body("Failed to process audio: " + e.getMessage());
         }
     }
 
     /**
-     * 2. STT 수행 후 DB에 저장
-     * 나중에 요약/질문 생성을 위해 저장만 함
+     * 2) STT 수행 후 DB 저장 → TranscriptionResponse 반환
      */
     @PostMapping("/transcribe-and-save")
     public ResponseEntity<?> transcribeAndSave(@RequestParam("file") MultipartFile file,
-                                               @AuthenticationPrincipal com.example.record.user.User user) throws Exception {
+                                               @AuthenticationPrincipal com.example.record.user.User user) {
         if (user == null) return ResponseEntity.status(401).body("Unauthorized");
         if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("파일이 비어 있습니다.");
+            return ResponseEntity.badRequest().body("File is empty");
         }
 
-        String original = file.getOriginalFilename();
-        String suffix = resolveSuffix(original);
+        final String original = file.getOriginalFilename();
+        final String suffix = resolveSuffix(original);
 
         try {
             byte[] bytes = file.getBytes();
             bytes = sttService.maybeReencodeToM4a(bytes, suffix);
 
-            String result = whisperService.transcribe(bytes, original, "ko");
-            if (!StringUtils.hasText(result)) {
+            String transcript = whisperService.transcribe(bytes, original, "ko");
+            if (!StringUtils.hasText(transcript)) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body("음성에서 텍스트를 추출하지 못했습니다.");
+                        .body("Failed to extract text from audio");
             }
 
             Transcription t = Transcription.builder()
                     .fileName(original != null ? original : "uploaded_audio")
-                    .resultText(result)
+                    .resultText(transcript)
                     .createdAt(LocalDateTime.now())
                     .user(user)
                     .build();
             repo.save(t);
 
-            return ResponseEntity.ok(new SttCreateResponse(
-                    t.getId(), t.getFileName(), t.getResultText(), t.getCreatedAt()
-            ));
+            return ResponseEntity.ok(toResponse(t));
+
         } catch (Exception e) {
-            return ResponseEntity.status(422).body("처리 실패: " + e.getMessage());
+            return ResponseEntity.status(422).body("Processing failed: " + e.getMessage());
         }
     }
 
     /**
-     * 3. 텍스트를 받아서 GPT 요약만 수행
-     * STT 없이 텍스트를 직접 받아서 요약
-     */
-    @PostMapping("/summarize")
-    public ResponseEntity<?> summarizeText(@RequestBody Map<String, String> request,
-                                           @AuthenticationPrincipal com.example.record.user.User user) {
-        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
-
-        String text = request.get("text");
-        Long transcriptionId = request.get("transcriptionId") != null ?
-                Long.parseLong(request.get("transcriptionId")) : null;
-
-        if (!StringUtils.hasText(text)) {
-            return ResponseEntity.badRequest().body("텍스트가 필요합니다.");
-        }
-
-        try {
-            String summary = sttGptService.summarize(text);
-
-            // transcriptionId가 있으면 해당 레코드 업데이트
-            if (transcriptionId != null) {
-                repo.findById(transcriptionId).ifPresent(t -> {
-                    if (t.getUser().equals(user)) {
-                        t.setSummary(summary);
-                        repo.save(t);
-                    }
-                });
-            }
-
-            return ResponseEntity.ok(Map.of("summary", summary));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("요약 생성 실패: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 4. 텍스트를 받아서 GPT 질문 생성
-     * 후기 바탕으로 질문 생성
-     */
-    @PostMapping("/generate-questions")
-    public ResponseEntity<?> generateQuestions(@RequestBody Map<String, String> request,
-                                               @AuthenticationPrincipal com.example.record.user.User user) {
-        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
-
-        String text = request.get("text");
-        Long transcriptionId = request.get("transcriptionId") != null ?
-                Long.parseLong(request.get("transcriptionId")) : null;
-
-        if (!StringUtils.hasText(text)) {
-            return ResponseEntity.badRequest().body("텍스트가 필요합니다.");
-        }
-
-        try {
-            List<String> questions = sttGptService.generateQuestions(text);
-
-            // transcriptionId가 있으면 해당 레코드에 질문 저장
-            if (transcriptionId != null) {
-                repo.findById(transcriptionId).ifPresent(t -> {
-                    if (t.getUser().equals(user)) {
-                        t.setQuestion(String.join("|||", questions)); // 구분자로 저장
-                        repo.save(t);
-                    }
-                });
-            }
-
-            return ResponseEntity.ok(Map.of("questions", questions));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("질문 생성 실패: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 5. DB에서 미리 준비된 질문 가져오기
-     * 카테고리별 질문 템플릿 제공
-     */
-    @GetMapping("/preset-questions")
-    public ResponseEntity<?> getPresetQuestions(@RequestParam(required = false) String category) {
-        try {
-            List<String> questions = questionService.getPresetQuestions(category);
-            return ResponseEntity.ok(Map.of("questions", questions, "category", category));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("질문 조회 실패: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 6. 질문에 대한 답변들을 병합하여 최종 후기 생성
-     * 여러 답변을 하나의 후기로 통합
+     * 3) 질문-답변들을 합쳐 최종 후기 생성 → 새 Transcription 저장 후 반환
      */
     @PostMapping("/merge-answers")
     public ResponseEntity<?> mergeAnswers(@RequestBody Map<String, Object> request,
@@ -195,19 +112,18 @@ public class SttController {
 
         @SuppressWarnings("unchecked")
         List<Map<String, String>> qaList = (List<Map<String, String>>) request.get("qaList");
-        String baseReview = (String) request.get("baseReview"); // 기존 후기 (있으면)
+        String baseReview = (String) request.get("baseReview");
 
         if (qaList == null || qaList.isEmpty()) {
-            return ResponseEntity.badRequest().body("질문-답변 목록이 필요합니다.");
+            return ResponseEntity.badRequest().body("qaList is required");
         }
 
         try {
-            // QA 리스트를 텍스트로 변환
+            // QA 텍스트 병합
             StringBuilder fullText = new StringBuilder();
             if (StringUtils.hasText(baseReview)) {
                 fullText.append("기존 후기:\n").append(baseReview).append("\n\n");
             }
-
             fullText.append("추가 질문과 답변:\n");
             for (Map<String, String> qa : qaList) {
                 String q = qa.get("question");
@@ -218,7 +134,7 @@ public class SttController {
                 }
             }
 
-            // GPT로 통합 후기 생성
+            // GPT로 최종 후기 생성
             String finalReview = sttGptService.mergeIntoFinalReview(fullText.toString());
 
             // 새 Transcription으로 저장
@@ -231,17 +147,25 @@ public class SttController {
                     .build();
             repo.save(finalT);
 
-            return ResponseEntity.ok(Map.of(
-                    "finalReview", finalReview,
-                    "transcriptionId", finalT.getId()
-            ));
+            TranscriptionResponse resp = TranscriptionResponse.builder()
+                    .id(finalT.getId())
+                    .fileName(finalT.getFileName())
+                    .createdAt(finalT.getCreatedAt())
+                    .transcript(finalT.getResultText())
+                    .summary(finalT.getSummary())
+                    .questions(null)
+                    .finalReview(finalReview)
+                    .build();
+
+            return ResponseEntity.ok(resp);
+
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("최종 후기 생성 실패: " + e.getMessage());
+            return ResponseEntity.status(500).body("Failed to generate final review: " + e.getMessage());
         }
     }
 
     /**
-     * 7. 저장된 Transcription 상세 조회
+     * 4) 단건 조회
      */
     @GetMapping("/{id}")
     public ResponseEntity<?> getTranscription(@PathVariable Long id,
@@ -250,21 +174,12 @@ public class SttController {
 
         return repo.findById(id)
                 .filter(t -> t.getUser().equals(user))
-                .map(t -> {
-                    List<String> questions = null;
-                    if (StringUtils.hasText(t.getQuestion())) {
-                        questions = List.of(t.getQuestion().split("\\|\\|\\|"));
-                    }
-                    return ResponseEntity.ok(new TranscriptionResponse(
-                            t.getId(), t.getFileName(), t.getResultText(),
-                            t.getCreatedAt(), t.getSummary(), questions
-                    ));
-                })
+                .map(t -> ResponseEntity.ok(toResponse(t)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     /**
-     * 8. 사용자의 모든 Transcription 목록 조회
+     * 5) 사용자 소유 목록 조회
      */
     @GetMapping("/list")
     public ResponseEntity<?> listTranscriptions(@AuthenticationPrincipal com.example.record.user.User user) {
@@ -282,10 +197,35 @@ public class SttController {
                 .toList());
     }
 
+    /* ========================= 헬퍼 ========================= */
+
     private static String resolveSuffix(String original) {
         if (original != null && original.lastIndexOf('.') != -1) {
             return original.substring(original.lastIndexOf('.'));
         }
         return ".tmp";
+    }
+
+    private TranscriptionResponse toResponse(Transcription t) {
+        List<String> qs = parseQuestions(t.getQuestion());
+        return TranscriptionResponse.builder()
+                .id(t.getId())
+                .fileName(t.getFileName())
+                .createdAt(t.getCreatedAt())
+                .transcript(t.getResultText())
+                .summary(t.getSummary())
+                .questions(qs)
+                .finalReview(null)
+                .build();
+    }
+
+    private static List<String> parseQuestions(String raw) {
+        if (!StringUtils.hasText(raw)) return null;
+        String[] parts = raw.split("\\|\\|\\|");
+        List<String> out = new ArrayList<>(parts.length);
+        for (String p : parts) {
+            if (StringUtils.hasText(p)) out.add(p.trim());
+        }
+        return out.isEmpty() ? null : out;
     }
 }
