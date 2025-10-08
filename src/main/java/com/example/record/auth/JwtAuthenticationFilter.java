@@ -27,40 +27,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain chain) throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
+        // Authorization 헤더가 없거나 포맷이 잘못되면 다음 필터로 진행
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            chain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
         try {
-            if (jwtUtil.validateToken(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
-                String role = jwtUtil.getRoleFromToken(token);
-                User user = userRepository.findByEmail(email).orElse(null);
+            if (!jwtUtil.validateToken(token)) {
+                unauthorized(response, "Unauthorized: Invalid or expired token");
+                return;
+            }
 
+            // subject = username (JwtUtil에서 subject를 username으로 발급)
+            String username = jwtUtil.getUsernameFromToken(token);
+            String roleFromToken = jwtUtil.getRoleFromToken(token);
+            String effectiveRole = (roleFromToken != null && !roleFromToken.isBlank()) ? roleFromToken : "USER";
+
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Repository는 username 기반으로 조회 (findByEmail 사용 안 함)
+                User user = userRepository.findByUsername(username).orElse(null);
                 if (user != null) {
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + effectiveRole));
+
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    user, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                            );
+                            new UsernamePasswordAuthenticationToken(user, null, authorities);
+
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
-            } else {
-                unauthorized(response, "Unauthorized: Invalid or expired token");
-                return;
             }
         } catch (JwtException | IllegalArgumentException e) {
             unauthorized(response, "Unauthorized: Invalid or expired token");
             return;
         }
 
-        filterChain.doFilter(request, response);
+        chain.doFilter(request, response);
     }
 
     private void unauthorized(HttpServletResponse response, String msg) throws IOException {

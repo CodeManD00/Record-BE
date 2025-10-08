@@ -22,7 +22,7 @@ public class SignupRequest {
     @Size(min = 8, max = 64, message = "비밀번호는 8~64자로 입력해주세요.")
     private String password;   // 비밀번호 (BCrypt로 저장)
 
-    // 닉네임은 중복 가능 + 선택 입력 가능
+    @NotBlank(message = "닉네임은 필수입니다.")
     @Size(max = 30, message = "닉네임은 30자 이하로 입력해주세요.")
-    private String nickname;   // 닉네임 (중복 허용)
+    private String nickname;   // 닉네임 (중복 허용, 필수 입력)
 }

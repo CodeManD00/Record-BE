@@ -1,4 +1,3 @@
-// src/main/java/com/example/record/auth/DevAuthBypassFilter.java
 package com.example.record.auth;
 
 import com.example.record.user.User;
@@ -31,23 +30,26 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws IOException, ServletException {
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            // 1) dev 유저를 DB에서 찾고, 없으면 생성
-            User devUser = userRepository.findByEmail("dev@local").orElseGet(() -> {
+        // Authorization 헤더가 있거나 이미 인증되어 있으면 우회 X
+        boolean hasAuthHeader = req.getHeader("Authorization") != null;
+        if (SecurityContextHolder.getContext().getAuthentication() == null && !hasAuthHeader) {
+
+            // username 기반으로 dev 계정 조회/생성
+            User devUser = userRepository.findByUsername("devuser").orElseGet(() -> {
                 User u = User.builder()
+                        .username("devuser")
                         .email("dev@local")
                         .password(passwordEncoder.encode("devpass"))
                         .nickname("DEV")
-                        .role("USER") // ADMIN 테스트면 "ADMIN"
                         .build();
                 return userRepository.save(u);
             });
 
-            // 2) 실제 DB 유저로 Authentication 구성
+            // role은 USER로 고정 (User 엔티티에 role 없음)
             var auth = new UsernamePasswordAuthenticationToken(
                     devUser,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + devUser.getRole()))
+                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
