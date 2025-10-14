@@ -1,5 +1,5 @@
 package com.example.record.auth;
-
+//운영용: JwtAuthenticationFilter 활성화
 import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

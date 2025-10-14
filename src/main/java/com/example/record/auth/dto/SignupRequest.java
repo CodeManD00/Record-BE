@@ -25,5 +25,5 @@ public class SignupRequest {
     // 닉네임은 중복 가능 + 필수
     @NotBlank(message = "닉네임은 필수입니다.")  // 추가!
     @Size(max = 30, message = "닉네임은 30자 이하로 입력해주세요.")
-    private String nickname;   // 닉네임 (중복 허용)
+    private String nickname;   // 닉네임 (중복 허용, 필수 입력)
 }

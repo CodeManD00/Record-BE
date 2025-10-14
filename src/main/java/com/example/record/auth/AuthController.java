@@ -5,6 +5,7 @@ import com.example.record.auth.dto.SignupRequest; // 추가
 import com.example.record.auth.dto.LoginRequest;  // 추가
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
+    private static final long ACCESS_TOKEN_EXPIRES_MS = 1000L * 60 * 60; // JwtUtil과 동일 시간(1시간)
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
+    public ResponseEntity<?> signup(@Valid @RequestBody SignupRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
         }
@@ -28,6 +31,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("이미 사용 중인 아이디입니다.");
         }
 
+        // User 엔티티에 role 필드가 없으므로 빌더에서 role 사용 X
         User user = User.builder()
                 .id(request.getId()) // id를 id로 저장
                 .email(request.getEmail())
@@ -38,7 +42,16 @@ public class AuthController {
 
         userRepository.save(user);
 
-        return ResponseEntity.ok("회원가입이 완료되었습니다.");
+        // 기본 권한은 USER로 발급
+        String role = "USER";
+        String token = jwtUtil.generateToken(user.getUsername(), role);
+
+        return ResponseEntity.ok(new TokenResponse(
+                token,
+                "Bearer",
+                ACCESS_TOKEN_EXPIRES_MS,
+                role
+        ));
     }
 
     @PostMapping("/login")
@@ -56,7 +69,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException("아이디를 찾을 수 없습니다."));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            return ResponseEntity.badRequest().body("비밀번호가 일치하지 않습니다.");
         }
 
         /**

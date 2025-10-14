@@ -1,4 +1,3 @@
-// src/main/java/com/example/record/auth/DevAuthBypassFilter.java
 package com.example.record.auth;
 
 import com.example.record.user.User;
@@ -45,16 +44,15 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
                         .email("dev@local")
                         .password(passwordEncoder.encode("devpass"))
                         .nickname("DEV")
-                        .role("USER") // ADMIN 테스트면 "ADMIN"
                         .build();
                 return userRepository.save(u);
             });
 
-            // 2) 실제 DB 유저로 Authentication 구성
+            // role은 USER로 고정 (User 엔티티에 role 없음)
             var auth = new UsernamePasswordAuthenticationToken(
                     devUser,
                     null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + devUser.getRole()))
+                    List.of(new SimpleGrantedAuthority("ROLE_USER"))
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }

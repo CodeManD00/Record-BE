@@ -1,5 +1,5 @@
 package com.example.record.auth;
-
+//개발용: 인증 우회 필터(DevAuthBypassFilter) 활성화
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

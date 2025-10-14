@@ -10,8 +10,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "12345678901234567890123456789012";
-    private static final long EXPIRATION_MS = 1000 * 60 * 60;
+    private static final String SECRET_KEY = "12345678901234567890123456789012"; // HS256 256-bit (32 bytes)
+    private static final long EXPIRATION_MS = 1000 * 60 * 60; // 1h
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
