@@ -15,14 +15,37 @@ public class JwtUtil {
 
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
-    public String generateToken(String email, String role) {
+    /**
+     * JWT 토큰을 생성합니다.
+     * 
+     * 변경 사항:
+     * - email → id로 변경
+     * - 이유: username 용어를 id로 통일하기 때문
+     * 
+     * @param id 사용자 ID
+     * @param role 사용자 역할
+     * @return 생성된 JWT 토큰
+     */
+    public String generateToken(String id, String role) {
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(id)  // email → id로 변경
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    /**
+     * 단일 파라미터로 토큰을 생성합니다.
+     * 
+     * 기존 코드와의 호환성을 위해 유지합니다.
+     * 
+     * @param id 사용자 ID
+     * @return 생성된 JWT 토큰 (기본 역할: USER)
+     */
+    public String generateToken(String id) {
+        return generateToken(id, "USER");
     }
 
     public boolean validateToken(String token) {
@@ -34,7 +57,17 @@ public class JwtUtil {
         }
     }
 
-    public String getEmailFromToken(String token) {
+    /**
+     * 토큰에서 사용자 ID를 추출합니다.
+     * 
+     * 변경 사항:
+     * - getEmailFromToken → getIdFromToken으로 변경
+     * - 이유: username 용어를 id로 통일하기 때문
+     * 
+     * @param token JWT 토큰
+     * @return 사용자 ID
+     */
+    public String getIdFromToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody().getSubject();
     }

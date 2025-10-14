@@ -33,8 +33,15 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             // 1) dev 유저를 DB에서 찾고, 없으면 생성
-            User devUser = userRepository.findByEmail("dev@local").orElseGet(() -> {
+            // 
+            // 변경 사항:
+            // - findByEmail → findById로 변경
+            // - 이유: username을 id로 통일하면서 findByEmail 메서드를 제거했기 때문
+            // - dev@local 이메일을 가진 사용자를 찾기 위해 이메일로 조회하는 대신
+            //   고정된 dev 사용자 ID를 사용하도록 변경
+            User devUser = userRepository.findById("dev").orElseGet(() -> {
                 User u = User.builder()
+                        .id("dev")  // 필수 필드인 id 추가
                         .email("dev@local")
                         .password(passwordEncoder.encode("devpass"))
                         .nickname("DEV")

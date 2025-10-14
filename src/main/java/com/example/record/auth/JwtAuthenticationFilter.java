@@ -39,9 +39,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
         try {
             if (jwtUtil.validateToken(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
+                /**
+                 * 토큰에서 사용자 정보 추출
+                 * 
+                 * 변경 사항:
+                 * - getEmailFromToken → getIdFromToken으로 변경
+                 * - findByEmail → findById로 변경
+                 * - 이유: username 용어를 id로 통일하기 때문
+                 */
+                String id = jwtUtil.getIdFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
-                User user = userRepository.findByEmail(email).orElse(null);
+                User user = userRepository.findById(id).orElse(null);
 
                 if (user != null) {
                     UsernamePasswordAuthenticationToken authentication =

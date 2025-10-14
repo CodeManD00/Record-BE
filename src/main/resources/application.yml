@@ -59,7 +59,7 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/recorddb
-    username: postgres
+    username: recorduser
     password: recordpass
 
   jpa:
