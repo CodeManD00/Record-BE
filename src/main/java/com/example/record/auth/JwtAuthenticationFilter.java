@@ -31,7 +31,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        // Authorization 헤더가 없거나 포맷이 잘못되면 다음 필터로 진행
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
             chain.doFilter(request, response);
             return;
@@ -40,32 +39,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
         try {
             if (jwtUtil.validateToken(token)) {
-                /**
-                 * 토큰에서 사용자 정보 추출
-                 * 
-                 * 변경 사항:
-                 * - getEmailFromToken → getIdFromToken으로 변경
-                 * - findByEmail → findById로 변경
-                 * - 이유: username 용어를 id로 통일하기 때문
-                 */
                 String id = jwtUtil.getIdFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
+
                 User user = userRepository.findById(id).orElse(null);
-
-            // subject = username (JwtUtil에서 subject를 username으로 발급)
-            String username = jwtUtil.getUsernameFromToken(token);
-            String roleFromToken = jwtUtil.getRoleFromToken(token);
-            String effectiveRole = (roleFromToken != null && !roleFromToken.isBlank()) ? roleFromToken : "USER";
-
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                // Repository는 username 기반으로 조회 (findByEmail 사용 안 함)
-                User user = userRepository.findByUsername(username).orElse(null);
-                if (user != null) {
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + effectiveRole));
+                if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(user, null, authorities);
-
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
