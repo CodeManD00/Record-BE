@@ -46,4 +46,19 @@ public class IntegratedImageController {
             return ResponseEntity.status(500).build();
         }
     }
+
+    // 🧪 임시 테스트 엔드포인트 (API 키 문제 해결 전까지 사용)
+    @PostMapping("/test")
+    public ResponseEntity<ImageResponse> generateImageTest(@RequestBody PromptRequest request) {
+        try {
+            // 더미 응답 반환 (실제 API 호출 없이)
+            ImageResponse response = new ImageResponse();
+            response.setPrompt("테스트 프롬프트: " + request.getTitle() + " - " + request.getReview());
+            response.setImageUrl("https://via.placeholder.com/1024x1024/FF6B6B/FFFFFF?text=Test+Image");
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }

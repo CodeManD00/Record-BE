@@ -44,11 +44,12 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
                         .email("dev@local")
                         .password(passwordEncoder.encode("devpass"))
                         .nickname("DEV")
+                        .role("USER")  // role 필드 추가
                         .build();
                 return userRepository.save(u);
             });
 
-            // role은 USER로 고정 (User 엔티티에 role 없음)
+            // role은 USER로 고정
             var auth = new UsernamePasswordAuthenticationToken(
                     devUser,
                     null,

@@ -90,10 +90,7 @@ public class OcrController {
                 );
             }
 
-            // 3차: OCR 원문으로 보정(부족한 필드만)
-            if (isNullOrEmpty(info.getArtist()) && containsBTS(text)) {
-                info.setArtist("BTS");
-            }
+            // 3차: OCR 원문으로 보정(부족한 필드만) - 티켓 전용
             if (isNullOrEmpty(info.getTitle()) && containsYTC(text)) {
                 info.setTitle("Yet to Come in BUSAN");
             }
@@ -123,25 +120,34 @@ public class OcrController {
         }
     }
 
-    /** ✅ 있는 키만 반환(title/date/time/venue/artist/seat) */
+    /** ✅ 티켓 전용 OCR (artist 필드 없음) */
     @PostMapping(
-            value = "/extract",
+            value = "/extract/ticket",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, String>> extractCompact(@RequestParam MultipartFile file) throws Exception {
+    public ResponseEntity<Map<String, String>> extractTicket(@RequestParam MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
 
             String prompt = """
-                아래 OCR 텍스트에서 다음 필드를 JSON으로 추출하세요.
-                키: title, date(YYYY-MM-DD), time(24h HH:mm), venue, artist, seat
+                아래 OCR 텍스트를 분석하여 **티켓** 정보를 JSON으로 추출하세요.
+                키: title, date(YYYY-MM-DD), time(24h HH:mm), venue, seat
 
-                규칙:
-                - 확실한 값만 포함(없거나 모호하면 **키 자체를 생략**)
-                - 좌석 오인식 교정 허용: "14일" → "14열"
-                - 순수 JSON만 출력
+                **티켓 전용 규칙:**
+                1. **제목(title) 추출**:
+                   - "MUSICAL" 다음에 오는 제목 (예: "MUSICAL 너를 위한 글자" → "너를 위한 글자")
+                   - 가장 큰 글씨이거나 우측 상단/하단의 극 이름
+                   - 부제목이나 설명 문구는 제목으로 인식하지 않음
+                   - 한국어로 출력 (예: "Nijinsky" → "니진스키")
+                
+                2. **아티스트(artist) 필드**: 아예 생략 (티켓에는 없음)
+                
+                3. **기타 필드**:
+                   - 확실한 값만 포함 (모호하면 키 자체를 생략)
+                   - 좌석 오인식 교정: "14일" → "14열"
+                   - 순수 JSON만 출력
 
                 OCR 텍스트:
                 %s
@@ -154,7 +160,85 @@ public class OcrController {
             try {
                 Map<String, String> ai = om.readValue(cleaned, new TypeReference<LinkedHashMap<String, String>>() {});
                 if (ai != null) {
-                    Set<String> allow = Set.of("title","date","time","venue","artist","seat");
+                    Set<String> allow = Set.of("title","date","time","venue","seat"); // artist 제외
+                    ai.forEach((k, v) -> {
+                        if (k != null && allow.contains(k) && v != null) {
+                            String val = v.trim();
+                            if (!val.isEmpty() && !val.equalsIgnoreCase("null") && !val.equalsIgnoreCase("unknown")) {
+                                result.put(k, val);
+                            }
+                        }
+                    });
+                }
+            } catch (Exception ignore) {
+                // GPT가 비정상 응답이면 아래 로컬 보완 적용
+            }
+
+            // 로컬 보완
+            Map<String, String> local = fallbackExtract(text);
+            local.forEach(result::putIfAbsent);
+
+            // 후처리
+            if (result.containsKey("seat")) {
+                result.put("seat", fixSeatHangulMisread(result.get("seat")));
+            }
+            if (result.containsKey("time")) {
+                String t24 = to24h(result.get("time"));
+                if (t24 != null) result.put("time", t24);
+            }
+            if (result.containsKey("date")) {
+                String iso = toIsoDate(result.get("date"));
+                if (iso != null) result.put("date", iso);
+            }
+
+            return ResponseEntity.ok(result);
+        } finally {
+            if (tempFile.exists()) tempFile.delete();
+        }
+    }
+
+
+    /** ✅ 기본 OCR 엔드포인트 (티켓 전용) */
+    @PostMapping(
+            value = "/extract",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<Map<String, String>> extractCompact(@RequestParam MultipartFile file) throws Exception {
+        File tempFile = createTempFromMultipart(file);
+        try {
+            String text = ocrService.extractTextFromImage(tempFile);
+
+            String prompt = """
+                아래 OCR 텍스트를 분석하여 **티켓** 정보를 JSON으로 추출하세요.
+                키: title, date(YYYY-MM-DD), time(24h HH:mm), venue, seat
+
+                **티켓 전용 규칙:**
+                1. **제목(title) 추출**:
+                   - "MUSICAL" 다음에 오는 제목 (예: "MUSICAL 너를 위한 글자" → "너를 위한 글자")
+                   - 가장 큰 글씨이거나 우측 상단/하단의 극 이름
+                   - 부제목이나 설명 문구는 제목으로 인식하지 않음
+                   - 한국어로 출력 (예: "Nijinsky" → "니진스키")
+                
+                2. **아티스트(artist) 필드**: 아예 생략 (티켓에는 없음)
+                
+                3. **기타 필드**:
+                   - 확실한 값만 포함 (모호하면 키 자체를 생략)
+                   - 좌석 오인식 교정: "14일" → "14열"
+                   - 순수 JSON만 출력
+
+                OCR 텍스트:
+                %s
+            """.formatted(text == null ? "" : text);
+
+            String json = gptClient.getStructuredJsonFromPrompt(prompt);
+            String cleaned = stripCodeFence(json).trim();
+
+            Map<String, String> result = new LinkedHashMap<>();
+            try {
+                Map<String, String> ai = om.readValue(cleaned, new TypeReference<LinkedHashMap<String, String>>() {});
+                if (ai != null) {
+                    Set<String> allow = Set.of("title","date","time","venue","seat"); // artist 제외
                     ai.forEach((k, v) -> {
                         if (k != null && allow.contains(k) && v != null) {
                             String val = v.trim();
@@ -227,9 +311,6 @@ public class OcrController {
     private static String nvl(String s) { return s == null ? "" : s; }
     private static boolean isNullOrEmpty(String s) { return s == null || s.isBlank(); }
 
-    private static boolean containsBTS(String src) {
-        return src != null && src.toUpperCase().contains("BTS");
-    }
     private static boolean containsYTC(String src) {
         if (src == null) return false;
         String l = src.toLowerCase();
@@ -271,8 +352,7 @@ public class OcrController {
         if (src == null) return m;
         String text = src.replace("\r"," ").replace("\n"," ").replaceAll("\\s+"," ").trim();
 
-        if (text.matches(".*\\bBTS\\b.*")) m.putIfAbsent("artist", "BTS");
-
+        // 티켓 전용: artist 필드 제거
         var titleMatcher = Pattern.compile("Yet to Come in BUSAN", Pattern.CASE_INSENSITIVE).matcher(text);
         if (titleMatcher.find()) m.putIfAbsent("title", "Yet to Come in BUSAN");
 
