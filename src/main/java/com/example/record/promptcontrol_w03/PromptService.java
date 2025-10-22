@@ -41,6 +41,60 @@ public class PromptService {
         return (s.length() <= max) ? s : s.substring(0, max);
     }
 
+    /**
+     * 한국어를 영어로 번역하는 간단한 매핑 메서드
+     * 
+     * 변경 사항:
+     * - DALL-E 3는 영어 프롬프트만 지원하므로 한국어를 영어로 번역
+     * - 주요 감정, 장르, 설정 등을 영어로 매핑
+     * 
+     * @param korean 한국어 텍스트
+     * @return 영어로 번역된 텍스트
+     */
+    private String translateToEnglish(String korean) {
+        if (korean == null) return "unknown";
+        
+        // 감정 번역
+        korean = korean.replace("아쉬움", "regret")
+                      .replace("답답함", "frustration")
+                      .replace("분노", "anger")
+                      .replace("만족", "satisfaction")
+                      .replace("기쁨", "joy")
+                      .replace("슬픔", "sadness")
+                      .replace("사랑", "love")
+                      .replace("증오", "hatred");
+        
+        // 장르/설정 번역
+        korean = korean.replace("뮤지컬", "musical")
+                      .replace("밴드", "band")
+                      .replace("콘서트", "concert")
+                      .replace("극장", "theater")
+                      .replace("무대", "stage")
+                      .replace("호텔", "hotel")
+                      .replace("방", "room");
+        
+        // 관계 번역
+        korean = korean.replace("연인", "lovers")
+                      .replace("친구", "friends")
+                      .replace("가족", "family")
+                      .replace("동료", "colleagues");
+        
+        // 액션 번역
+        korean = korean.replace("노래", "singing")
+                      .replace("춤", "dancing")
+                      .replace("연기", "acting")
+                      .replace("연주", "playing")
+                      .replace("공연", "performance");
+        
+        // 조명 번역
+        korean = korean.replace("어둠", "darkness")
+                      .replace("밝음", "brightness")
+                      .replace("무대조명", "stage lighting")
+                      .replace("스포트라이트", "spotlight");
+        
+        return korean;
+    }
+
     public PromptResponse generatePrompt(PromptRequest input) {
         String genre = input.getGenre();
         String basePrompt;
@@ -113,7 +167,7 @@ public class PromptService {
             }
         }
 
-        // 4. 프롬프트 생성 (DB 정보 우선 사용)
+        // 4. 프롬프트 생성 (DB 정보 우선 사용) - 영어로 번역
         return String.format("""
                 A %s musical theater scene about %s,
                 set in %s and depicting %s,
@@ -122,13 +176,13 @@ public class PromptService {
                 under %s.
                 No captions, no letters, no words, no logos, no watermarks.
                 """,
-                data.get("emotion"),
-                musicalSummary,  // DB 요약 또는 후기 분석 결과
-                musicalBackground,  // DB 배경 또는 후기 분석 결과
-                data.get("relationship"),
-                characterPart,
-                data.get("actions"),
-                data.get("lighting")
+                translateToEnglish((String) data.get("emotion")),
+                translateToEnglish(musicalSummary),  // DB 요약 또는 후기 분석 결과
+                translateToEnglish(musicalBackground),  // DB 배경 또는 후기 분석 결과
+                translateToEnglish((String) data.get("relationship")),
+                translateToEnglish(characterPart),
+                translateToEnglish((String) data.get("actions")),
+                translateToEnglish((String) data.get("lighting"))
         );
     }
 
@@ -156,7 +210,7 @@ public class PromptService {
         String bandSymbol = bandOpt.map(BandDb::getBandSymbol)
                 .orElse("stage design");  // DB에 없으면 기본값
         
-        // 3. 프롬프트 생성 (DB 정보 우선 사용)
+        // 3. 프롬프트 생성 (DB 정보 우선 사용) - 영어로 번역
         return String.format(
                 "A moody alternative rock live performance scene by %s,\n" +
                         "featuring %s,\n" +
@@ -166,12 +220,12 @@ public class PromptService {
                         "including %s lighting, fog machines and backlights,\n" +
                         "without showing any characters or text.\n" +
                         "No captions, no letters, no words, no logos, no watermarks.",
-                bandName,
-                bandNameMeaning,  // DB 밴드 의미 또는 기본값
-                input.getLocation(),
+                translateToEnglish(bandName),
+                translateToEnglish(bandNameMeaning),  // DB 밴드 의미 또는 기본값
+                translateToEnglish(input.getLocation()),
                 input.getDate(),
-                bandSymbol,  // DB 밴드 상징 또는 기본값
-                posterColor  // DB 포스터 색상 또는 기본값
+                translateToEnglish(bandSymbol),  // DB 밴드 상징 또는 기본값
+                translateToEnglish(posterColor)  // DB 포스터 색상 또는 기본값
         );
     }
 }
