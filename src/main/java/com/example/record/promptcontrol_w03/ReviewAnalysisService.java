@@ -39,12 +39,14 @@ public class ReviewAnalysisService {
     }
 
     // 공연 후기를 GPT에게 분석 요청하고, 결과를 JSON → Map<String, Object> 형태로 반환
+    // 변경 사항: 분석 결과를 영어로 반환하도록 프롬프트 수정
+    // 이유: DALL-E 3는 영어 프롬프트만 지원하므로, 프롬프트 생성 시 한글을 영어로 변환하는 과정을 간소화하기 위함
     public Map<String, Object> analyzeReview(String reviewText) {
         String prompt = """
-            다음 공연 후기를 분석하여 아래 항목을 '오직 JSON'으로만 반환해줘.
-            키: emotion, theme, setting, relationship, actions, character1, character2, (가능하면 character3, character4), lighting
-            JSON 외의 설명/코드는 절대 포함하지 마.
-            후기: %s
+            Analyze the following performance review and return ONLY JSON (no explanations, no code blocks).
+            Keys: emotion, theme, setting, relationship, actions, character1, character2, (character3, character4 if available), lighting
+            IMPORTANT: Return all values in ENGLISH only. Translate Korean words/phrases to English.
+            Review: %s
         """.formatted(reviewText);
 
         Map<String, Object> body = Map.of(
