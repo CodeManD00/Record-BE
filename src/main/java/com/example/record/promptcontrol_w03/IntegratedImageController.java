@@ -30,6 +30,11 @@ public class IntegratedImageController {
             // 1) 프롬프트 생성
             PromptResponse promptResponse = promptService.generatePrompt(request);
             String prompt = promptResponse.getPrompt();
+            
+            // 디버깅: 최종 프롬프트 로그 출력
+            System.out.println("🔍 [DEBUG] 최종 프롬프트 (DALL-E로 전송 전):");
+            System.out.println(prompt);
+            System.out.println("🔍 [DEBUG] 프롬프트 길이: " + prompt.length() + " 문자");
 
             // 2) 단일 이미지 생성 (항상 1장, 1:1)
             String imageUrl = dalle3Service.generateSingleImageUrl(prompt);
