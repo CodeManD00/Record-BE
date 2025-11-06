@@ -1,9 +1,10 @@
 // PromptController: 사용자의 요청을 받아 프롬프트를 생성하고, 이를 JSON 형태로 응답하는 컨트롤러입니다.
 
-package com.example.record.promptcontrol_w03;
+package com.example.record.promptcontrol_w03.controlbuild;
 
 import com.example.record.promptcontrol_w03.dto.PromptRequest;
 import com.example.record.promptcontrol_w03.dto.PromptResponse;
+import com.example.record.promptcontrol_w03.service.PromptService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

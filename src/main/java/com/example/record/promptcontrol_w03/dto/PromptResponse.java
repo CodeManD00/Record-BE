@@ -1,6 +1,12 @@
 // 이 클래스는 백엔드에서 프론트엔드로 "프롬프트 생성 결과"를 보낼 때 사용됩니다.
 // 즉, 사용자가 입력한 공연 정보와 후기를 분석해 만든 프롬프트와 부가 정보를 담는 데이터 구조입니다.
+/*
+GPT 모델 응답을 담는 응답 DTO
 
+OpenAIChatService가 GPT 응답을 받은 뒤 JSON 파싱 결과를 이 객체에 매핑
+
+프론트엔드나 DB에 전달할 때 직렬화(Serialization)되어 사용됨.
+ */
 package com.example.record.promptcontrol_w03.dto;
 
 import java.util.Map;

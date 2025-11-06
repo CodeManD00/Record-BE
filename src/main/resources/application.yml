@@ -15,15 +15,18 @@ spring:
 
 openai:
   api:
-    key: ${OPENAI_API_KEY}                 # ▶ 환경변수로 주입 (Whisper/Chat 공용 키)
+    key: ${OPENAI_API_KEY}                 # ▶ 환경변수로 주입 (Whisper/Chat/Image 공용 키)
   url:
     transcription: https://api.openai.com/v1/audio/transcriptions
     chat: https://api.openai.com/v1/chat/completions
+    image: https://api.openai.com/v1/images/generations   # ✅ 추가: 이미지 생성 엔드포인트
   model:
     transcription: whisper-1               # ▶ Whisper API 모델명
-    chat: gpt-4o-mini                      # (선택) 기존 GPT 요약/질문 생성에 사용할 모델
+    chat: gpt-4o-mini                      # ▶ GPT 요약/질문 생성에 사용할 모델
+    image: gpt-image-1                     # ✅ 추가: 이미지 생성 모델
   limits:
     whisperMaxFileMB: 25                   # ▶ Whisper 단일 파일 권장 상한(서버에서 사전 체크)
+    imagePromptMaxChars: 900               # ✅ 추가: 이미지 프롬프트 안전 상한(오류 방지)
 
 stt:
   provider: openai                         # openai | (gcp|aws|azure 로 향후 전환 대비)

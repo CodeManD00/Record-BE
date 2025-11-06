@@ -1,5 +1,11 @@
 // 이 클래스는 이미지 생성 결과를 클라이언트(예: 프론트엔드)에게 전달할 때 사용하는 데이터 구조입니다.
 // → "프롬프트"와 "생성된 이미지 URL"이라는 두 가지 정보를 담고 있음
+/* gpt1 image 호출 결과를 담는 응답 DTO (Data Transfer Object)
+
+이미지 생성 API 호출 후 반환되는 JSON을 자바 객체로 매핑하기 위해 사용됨.
+
+주로 url, revised_prompt, created 등의 필드를 포함해, 프론트엔드로 전달하거나 DB에 저장하기 좋게 구조화함.
+ */
 package com.example.record.promptcontrol_w03.dto;
 
 public class ImageResponse {

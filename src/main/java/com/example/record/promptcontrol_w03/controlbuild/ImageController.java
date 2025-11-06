@@ -1,21 +1,23 @@
-package com.example.record.promptcontrol_w03;
+package com.example.record.promptcontrol_w03.controlbuild;
 
 import com.example.record.promptcontrol_w03.dto.ImageResponse;
 import com.example.record.promptcontrol_w03.dto.PromptRequest;
 import com.example.record.promptcontrol_w03.dto.PromptResponse;
+import com.example.record.promptcontrol_w03.service.Gpt1PicService;
+import com.example.record.promptcontrol_w03.service.PromptService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/generate-image")
-public class IntegratedImageController {
+public class ImageController {
 
     private final PromptService promptService;
-    private final Dalle3Service dalle3Service;
+    private final Gpt1PicService gpt1PicService;
 
-    public IntegratedImageController(PromptService promptService, Dalle3Service dalle3Service) {
+    public ImageController(PromptService promptService, Gpt1PicService gpt1PicService) {
         this.promptService = promptService;
-        this.dalle3Service = dalle3Service;
+        this.gpt1PicService = gpt1PicService;
     }
 
     @PostMapping
@@ -30,14 +32,14 @@ public class IntegratedImageController {
             // 1) 프롬프트 생성
             PromptResponse promptResponse = promptService.generatePrompt(request);
             String prompt = promptResponse.getPrompt();
-            
+
             // 디버깅: 최종 프롬프트 로그 출력
-            System.out.println("🔍 [DEBUG] 최종 프롬프트 (DALL-E로 전송 전):");
+            System.out.println("🔍 [DEBUG] 최종 프롬프트 (GPT-1로 전송 전):");
             System.out.println(prompt);
             System.out.println("🔍 [DEBUG] 프롬프트 길이: " + prompt.length() + " 문자");
 
-            // 2) 단일 이미지 생성 (항상 1장, 1:1)
-            String imageUrl = dalle3Service.generateSingleImageUrl(prompt);
+            // 2) 단일 이미지 생성 (항상 1장, 4:5)
+            String imageUrl = gpt1PicService.generateSingleImageUrl(prompt);
 
             // 3) 응답
             ImageResponse response = new ImageResponse();
@@ -48,6 +50,7 @@ public class IntegratedImageController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }
@@ -59,8 +62,8 @@ public class IntegratedImageController {
             // 더미 응답 반환 (실제 API 호출 없이)
             ImageResponse response = new ImageResponse();
             response.setPrompt("테스트 프롬프트: " + request.getTitle() + " - " + request.getReview());
-            response.setImageUrl("https://via.placeholder.com/1024x1024/FF6B6B/FFFFFF?text=Test+Image");
-            
+            response.setImageUrl("https://via.placeholder.com/1080x1350/FF6B6B/FFFFFF?text=Test+Image");
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
