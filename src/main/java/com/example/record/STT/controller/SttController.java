@@ -1,5 +1,11 @@
-package com.example.record.STT;
+package com.example.record.STT.controller;
 
+import com.example.record.STT.dto.TranscriptionResponse;
+import com.example.record.STT.entres.Transcription;
+import com.example.record.STT.entres.TranscriptionRepository;
+import com.example.record.STT.service.SttGptService;
+import com.example.record.STT.service.SttService;
+import com.example.record.STT.service.WhisperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

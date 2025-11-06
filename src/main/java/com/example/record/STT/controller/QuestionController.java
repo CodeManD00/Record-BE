@@ -1,5 +1,10 @@
-package com.example.record.STT;
+package com.example.record.STT.controller;
 
+import com.example.record.STT.dto.GenerateQuestionsRequest;
+import com.example.record.STT.dto.QuestionsResponse;
+import com.example.record.STT.entres.TranscriptionRepository;
+import com.example.record.STT.service.QuestionService;
+import com.example.record.STT.service.SttGptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

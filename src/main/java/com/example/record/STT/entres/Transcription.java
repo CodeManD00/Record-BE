@@ -1,6 +1,6 @@
 // Transcription: 음성 → 텍스트 변환(STT) 결과와 GPT 요약/질문을 저장하는 엔티티 클래스입니다.
 
-package com.example.record.STT;
+package com.example.record.STT.entres;
 
 import com.example.record.user.User;
 import jakarta.persistence.*;

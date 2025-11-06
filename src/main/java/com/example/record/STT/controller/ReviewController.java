@@ -1,5 +1,12 @@
-package com.example.record.STT;
+package com.example.record.STT.controller;
 
+import com.example.record.STT.dto.FinalizeRequest;
+import com.example.record.STT.dto.SummarizeRequest;
+import com.example.record.STT.dto.SummaryResponse;
+import com.example.record.STT.dto.TranscriptionResponse;
+import com.example.record.STT.entres.Transcription;
+import com.example.record.STT.entres.TranscriptionRepository;
+import com.example.record.STT.service.SttGptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

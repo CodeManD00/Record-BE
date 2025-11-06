@@ -1,4 +1,4 @@
-package com.example.record.STT;
+package com.example.record.STT.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

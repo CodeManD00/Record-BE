@@ -1,5 +1,5 @@
 // com/example/record/STT/GenerateQuestionsRequest.java
-package com.example.record.STT;
+package com.example.record.STT.dto;
 
 public record GenerateQuestionsRequest(
         Long transcriptionId, // 선택

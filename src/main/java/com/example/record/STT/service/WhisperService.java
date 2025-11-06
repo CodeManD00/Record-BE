@@ -1,4 +1,4 @@
-package com.example.record.STT;
+package com.example.record.STT.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

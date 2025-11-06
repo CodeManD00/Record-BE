@@ -1,5 +1,5 @@
 // com/example/record/STT/QuestionsResponse.java
-package com.example.record.STT;
+package com.example.record.STT.dto;
 
 import java.util.List;
 

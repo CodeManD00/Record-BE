@@ -1,4 +1,4 @@
-package com.example.record.STT;
+package com.example.record.STT.dto;
 
 import lombok.*;
 
