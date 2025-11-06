@@ -1,5 +1,15 @@
 package com.example.record.promptcontrol_w03.service;
+/*
+역할: 후기 텍스트 → 구조화 JSON 추출.
 
+핵심 기능
+
+OpenAIChatService.complete() 호출 시 시스템 프롬프트를 “compact JSON만” 요구
+
+응답 문자열에서 JSON 부분만 추출(extractJson) 후 ObjectMapper로 Map 변환
+
+파싱 실패 시 {"error":"JSON parse failed","raw":...} 형태로 안전 반환
+ */
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

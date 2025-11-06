@@ -1,5 +1,13 @@
 package com.example.record.promptcontrol_w03.service;
-
+/*
+역할: OpenAI 이미지 생성 호출 전담.
+핵심 기능
+단일 이미지(1장) & 4:5 비율 고정 생성 (1080x1350로 추정)
+WebClient로 /images/generations 호출, timeout(60s) + 백오프 retry(2회) 적용
+응답에서 data[0].url 우선 사용, 없으면 b64_json 처리 분기
+TODO: b64_json 반환 시 파일 저장/S3 업로드 후 공개 URL 반환 구현 미완(예외 던짐)
+호환 메서드: generateImageUrlOnly()는 위 메서드의 alias
+ */
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;

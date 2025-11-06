@@ -1,5 +1,13 @@
 package com.example.record.promptcontrol_w03.service;
+/*
+역할: OpenAI Chat Completions 호출 공통 유틸.
 
+핵심 기능
+WebClient로 /chat/completions 호출, timeout(30s) + 백오프 retry(2회), 에러 시 응답 바디 포함해 예외 래핑
+model, temperature, max_tokens(옵션), messages(system/user) 구성
+첫 choice의 message.content를 반환(비어있으면 예외)
+DTO: ChatRequest/Message/ChatResponse 내부 정적 클래스
+ */
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

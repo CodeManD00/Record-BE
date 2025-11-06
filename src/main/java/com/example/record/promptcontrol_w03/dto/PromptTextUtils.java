@@ -1,5 +1,15 @@
 package com.example.record.promptcontrol_w03.dto;
+/*
+역할: 프롬프트/문장 유틸.
 
+기능
+
+정확히 2~3문장으로 강제(4문장 이상이면 3문장으로 합치기)
+
+문장 경계 단위로 길이 클램프
+
+{name=…, description=…} 같은 의사-JSON 캐릭터 문자열을 자연어로 정리
+ */
 
 import lombok.experimental.UtilityClass;
 

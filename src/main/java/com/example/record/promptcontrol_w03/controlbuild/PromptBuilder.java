@@ -1,5 +1,15 @@
 package com.example.record.promptcontrol_w03.controlbuild;
+/*
+역할: 최종 “이미지 프롬프트” 조립(간단 버전).
 
+핵심 규칙
+
+shortReview(필수, 2~3문장) + imageRequest(선택) 결합
+
+전체 문장수 4~5로 제한(부족하면 보강 문장 추가, 초과하면 5문장으로 컷)
+
+마지막에 텍스트 금지 규칙 추가:
+ */
 public class PromptBuilder {
 
     private static final String NO_TEXT_RULE =

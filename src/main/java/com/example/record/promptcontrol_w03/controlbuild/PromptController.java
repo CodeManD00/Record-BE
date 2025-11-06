@@ -1,5 +1,14 @@
-// PromptController: 사용자의 요청을 받아 프롬프트를 생성하고, 이를 JSON 형태로 응답하는 컨트롤러입니다.
+/*
+역할: 프롬프트 생성 API 엔드포인트.
 
+엔드포인트: POST /prompt
+
+입력: PromptRequest (title, date, location, genre, cast, review, imageRequest 등)
+
+로직: PromptService.generatePrompt() 호출 → 최종 프롬프트 생성
+
+출력: PromptResponse (prompt 본문 + meta)
+ */
 package com.example.record.promptcontrol_w03.controlbuild;
 
 import com.example.record.promptcontrol_w03.dto.PromptRequest;

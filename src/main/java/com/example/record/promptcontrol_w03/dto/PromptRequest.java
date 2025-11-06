@@ -1,5 +1,11 @@
 package com.example.record.promptcontrol_w03.dto;
 /*
+이 프로젝트 구조에서 **imageRequest는 프론트엔드(클라이언트)**가
+/prompt 또는 /generate-image 요청을 보낼 때 함께 전달하는 요청 본문(JSON) 속 필드입니다.
+
+즉, 백엔드(Spring Boot)는 사용자가 입력한 이 값을 PromptRequest DTO의 imageRequest 필드에서 받습니다.
+ */
+/*
 클라이언트(프론트엔드)에서 들어오는 프롬프트 요청 데이터를 담는 요청 DTO
 
 예를 들어 사용자가 “이 공연 후기 요약해줘” 같은 요청을 보낼 때,

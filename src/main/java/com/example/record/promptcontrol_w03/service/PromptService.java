@@ -1,5 +1,19 @@
 package com.example.record.promptcontrol_w03.service;
-//짧은 영어 문장, 이미지용
+
+/*
+역할: “이미지용 짧은 영어 프롬프트”를 만들어 주는 핵심 서비스.
+핵심 기능
+장르 분기: 뮤지컬/밴드 케이스로 프롬프트 템플릿 분리 (미지원 장르면 예외)
+공연 DB 연계:
+MusicalDbRepository에서 작품/캐릭터 조회(요약, 배경, 주요 인물수, 캐릭터 속성 활용)
+BandDbRepository에서 밴드명/의미/상징/포스터 색 등 조회
+리뷰 내용 분석 연계: ReviewAnalysisService.analyzeReview(review) 호출 → 감정/주제/배경/조명/행동/캐릭터 등 JSON 추출
+영문화/정규화: 한국어 키워드를 영어로 치환(감정/관계/나이/성별/장소/시대 등 광범위 매핑)
+2~3문장 압축: OpenAIChatService를 사용해 자연스러운 2~3문장으로 요약 + imageRequest 녹여 넣기
+길이 가드: 문장 단위로 최대 글자 수를 넘지 않게 안전절단
+결과: PromptResponse(prompt, meta) 생성 (meta에는 장르/요약여부/추론 키워드 등)
+보조 메서드: 캐릭터 설명 정리(JSON 느낌 문자열 → 자연어), 영어 치환, 문장단위 클램프 등
+ */
 import com.example.record.band.BandDb;
 import com.example.record.band.BandDbRepository;
 import com.example.record.musical.MusicalCharacter;

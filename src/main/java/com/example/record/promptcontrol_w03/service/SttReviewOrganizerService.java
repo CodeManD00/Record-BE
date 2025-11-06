@@ -1,5 +1,15 @@
 package com.example.record.promptcontrol_w03.service;
 //길이 제한 없음, 구조화 & 정리문 반환
+/*
+역할: STT/후기 내용을 길이 제한 없이 구조적으로 정리 + 내러티브 문단 생성.
+핵심 기능
+DB 컨텍스트 로딩:
+뮤지컬: 제목 정규화 → findByTitle()/findByTitleContaining() 등으로 유연 매칭, summary/background/characters 로드
+밴드: 의미/색상/상징/배경 등 단서(cues) 조합
+StructuredMeta 생성: 장르/제목/날짜/장소/감정/주제/관계/배경/조명/행동/캐릭터/하이라이트 등 필드 구성
+서식화 출력: 섹션(기본정보/연출/인물/핵심포인트/—정리후기—)로 보기 좋은 텍스트 조립
+결과: StructuredMeta, narrative(문단), dbSummary, rawAnalysis 등을 묶어 반환
+ */
 
 import com.example.record.band.BandDb;
 import com.example.record.band.BandDbRepository;

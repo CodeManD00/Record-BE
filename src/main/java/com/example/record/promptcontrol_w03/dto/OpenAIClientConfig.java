@@ -1,10 +1,12 @@
 package com.example.record.promptcontrol_w03.dto;
 /*
-OpenAI API 통신용 WebClient를 설정하는 Spring @Configuration 클래스
+역할: OpenAI 호출용 WebClient Bean 제공.
 
-baseUrl (예: https://api.openai.com/v1)과 Authorization 헤더(Bearer ${OPENAI_API_KEY})를 미리 세팅
+구성
 
-이후 @Autowired 또는 생성자 주입 방식으로 WebClient를 재사용 가능하게 함.
+baseUrl(예: https://api.openai.com/v1), Authorization: Bearer ${OPENAI_API_KEY}, Content-Type: application/json
+
+대용량 응답 대비 maxInMemorySize 상향(16MB)
  */
 
 import com.fasterxml.jackson.databind.ObjectMapper;

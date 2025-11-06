@@ -1,5 +1,23 @@
 package com.example.record.promptcontrol_w03.controlbuild;
+/*
+역할: 이미지 생성 API 엔드포인트.
 
+엔드포인트
+
+POST /generate-image : 실제 생성
+
+POST /generate-image/test : 더미(placeholder) 이미지 응답 (API 키/연동 이슈 시 테스트용)
+
+로직
+
+PromptService로 최종 프롬프트 생성
+
+Gpt1PicService.generateSingleImageUrl() 호출로 4:5 단일 이미지 생성
+
+ImageResponse(prompt, imageUrl) 반환
+
+특징: 프롬프트/길이 디버그 출력, 예외 시 400/500 처리
+ */
 import com.example.record.promptcontrol_w03.dto.ImageResponse;
 import com.example.record.promptcontrol_w03.dto.PromptRequest;
 import com.example.record.promptcontrol_w03.dto.PromptResponse;
