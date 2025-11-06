@@ -1,16 +1,9 @@
 package com.example.record.promptcontrol_w03.dto;
 /*
-이 프로젝트 구조에서 **imageRequest는 프론트엔드(클라이언트)**가
-/prompt 또는 /generate-image 요청을 보낼 때 함께 전달하는 요청 본문(JSON) 속 필드입니다.
-
-즉, 백엔드(Spring Boot)는 사용자가 입력한 이 값을 PromptRequest DTO의 imageRequest 필드에서 받습니다.
- */
-/*
-클라이언트(프론트엔드)에서 들어오는 프롬프트 요청 데이터를 담는 요청 DTO
-
-예를 들어 사용자가 “이 공연 후기 요약해줘” 같은 요청을 보낼 때,
-이 클래스가 해당 텍스트(prompt, genre, summaryType, 등)를 받음.
- */
+프론트엔드가 /prompt 또는 /generate-image 호출 시 전달하는 요청 DTO.
+imageRequest 는 사용자가 직접 입력하는 추가 스타일/요청이며,
+재생성 모드에서는 basePrompt(기존 프롬프트)를 보내면 분석 없이 덧붙여 사용한다.
+*/
 import java.util.List;
 
 public class PromptRequest {
@@ -23,9 +16,12 @@ public class PromptRequest {
     private String review;
 
     // 🎨 이미지 프롬프트 관련
-    private String imageRequest; // 예: "푸른 색 기반, 귀여운 그림체"
-    private String size;         // 예: "1024x1024"
-    private int n = 1;           // 생성 장수 (기본 1)
+    private String imageRequest;   // 예: "푸른 색 기반, 귀여운 그림체"
+    private String size;           // 예: "1024x1024"
+    private int n = 1;             // 생성 장수 (기본 1)
+
+    // ♻️ 재생성 모드 지원 (선택)
+    private String basePrompt;     // 기존 프롬프트 그대로 + imageRequest 덧붙여서 사용
 
     // ===== Getters =====
     public String getTitle() { return title; }
@@ -37,6 +33,7 @@ public class PromptRequest {
     public String getImageRequest() { return imageRequest; }
     public String getSize() { return size; }
     public int getN() { return n; }
+    public String getBasePrompt() { return basePrompt; }
 
     // ===== Setters =====
     public void setTitle(String title) { this.title = title; }
@@ -48,4 +45,5 @@ public class PromptRequest {
     public void setImageRequest(String imageRequest) { this.imageRequest = imageRequest; }
     public void setSize(String size) { this.size = size; }
     public void setN(int n) { this.n = n; }
+    public void setBasePrompt(String basePrompt) { this.basePrompt = basePrompt; }
 }
