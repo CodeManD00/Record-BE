@@ -29,7 +29,7 @@ public class Gpt1PicService {
     @Value("${openai.limits.imagePromptMaxChars:900}")
     private int imagePromptMaxChars;
 
-    @Value("${openai.url.images}")
+    @Value("${openai.url.image}")
     private String imagesUrl;
 
     private final WebClient openAiWebClient;
