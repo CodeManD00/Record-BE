@@ -31,7 +31,7 @@ public class OcrController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<OcrResponse> uploadImage(@RequestParam MultipartFile file) throws Exception {
+    public ResponseEntity<OcrResponse> uploadImage(@RequestPart("file") MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
@@ -47,7 +47,7 @@ public class OcrController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<PerformanceInfo> uploadAndParse(@RequestParam MultipartFile file) throws Exception {
+    public ResponseEntity<PerformanceInfo> uploadAndParse(@RequestPart("file") MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
@@ -126,7 +126,7 @@ public class OcrController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, String>> extractTicket(@RequestParam MultipartFile file) throws Exception {
+    public ResponseEntity<Map<String, String>> extractTicket(@RequestPart("file") MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
@@ -197,14 +197,13 @@ public class OcrController {
         }
     }
 
-
     /** ✅ 기본 OCR 엔드포인트 (티켓 전용) */
     @PostMapping(
             value = "/extract",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, String>> extractCompact(@RequestParam MultipartFile file) throws Exception {
+    public ResponseEntity<Map<String, String>> extractCompact(@RequestPart("file") MultipartFile file) throws Exception {
         File tempFile = createTempFromMultipart(file);
         try {
             String text = ocrService.extractTextFromImage(tempFile);
