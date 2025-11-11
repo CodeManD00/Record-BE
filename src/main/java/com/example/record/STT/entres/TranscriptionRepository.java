@@ -8,8 +8,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface TranscriptionRepository extends JpaRepository<Transcription, Long> {
 
-    // 특정 사용자(User)의 STT 기록 전체 조회
+import com.example.record.user.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.List;
+
+public interface TranscriptionRepository extends JpaRepository<Transcription, Long> {
     List<Transcription> findByUser(User user);
 }

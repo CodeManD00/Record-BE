@@ -1,12 +1,12 @@
+
 package com.example.record.STT.dto;
 
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * STT/요약/질문/최종후기 상태를 한 번에 보여주는 스냅샷 DTO.
+ * STT/정리/최종후기 상태를 한 번에 보여주는 스냅샷 DTO.
  * - 저장 전(임시) 응답: id=null, createdAt=now
  * - 저장 후 응답: id != null
  */
@@ -29,12 +29,9 @@ public class TranscriptionResponse {
     /** Whisper STT 원문 */
     private String transcript;
 
-    /** GPT 요약 결과 (없으면 null) */
+    /** GPT 요약/개선 결과 (없으면 null) */
     private String summary;
 
-    /** GPT 질문 목록 (없으면 null/빈 배열) */
-    private List<String> questions;
-
-    /** 최종 후기 (merge-answers 호출 응답에서만 채움) */
+    /** 최종 후기 (finalize 응답에서만 채움) */
     private String finalReview;
 }

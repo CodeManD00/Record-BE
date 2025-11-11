@@ -1,7 +1,0 @@
-// com/example/record/STT/FinalizeResponse.java
-package com.example.record.STT.dto;
-
-public record FinalizeResponse(
-        Long transcriptionId,
-        String finalReview
-) {}

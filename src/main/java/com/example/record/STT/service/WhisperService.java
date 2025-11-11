@@ -1,3 +1,4 @@
+
 package com.example.record.STT.service;
 
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,6 @@ public class WhisperService {
         body.add("file", filePart);
         body.add("model", model);
         if (language != null && !language.isBlank()) body.add("language", language);
-        // body.add("response_format", "json"); // 필요 시 활성화
 
         return webClient.post()
                 .uri(transcriptionUrl)

@@ -1,3 +1,4 @@
+
 package com.example.record.STT.service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ public class SttService {
     @Value("${stt.ffmpeg.path:ffmpeg}")
     private String ffmpegPath;
 
+    /** 25MB 초과 파일은 m4a(16kHz/mono)로 재인코딩 */
     public byte[] maybeReencodeToM4a(byte[] inputBytes, String originalSuffix) throws Exception {
         if (inputBytes.length <= 24 * 1024 * 1024) return inputBytes;
 
@@ -36,7 +38,7 @@ public class SttService {
 
             Process p = pb.start();
             try (BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-                while (br.readLine() != null) { }
+                while (br.readLine() != null) { /* consume */ }
             }
             int exit = p.waitFor();
             if (exit != 0) throw new RuntimeException("ffmpeg 재인코딩 실패(exit=" + exit + ")");

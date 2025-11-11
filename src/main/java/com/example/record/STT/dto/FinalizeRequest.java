@@ -1,4 +1,4 @@
-// com/example/record/STT/FinalizeRequest.java
+
 package com.example.record.STT.dto;
 
 public record FinalizeRequest(
