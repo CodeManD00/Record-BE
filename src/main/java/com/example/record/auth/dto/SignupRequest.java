@@ -12,7 +12,7 @@ import lombok.Setter;
 public class SignupRequest {
 
     @NotBlank(message = "아이디는 필수입니다.")
-    @Size(min = 3, max = 20, message = "아이디는 3~20자로 입력해주세요.")
+    @Size(min = 3, max = 15, message = "아이디는 3~15자로 입력해주세요.")
     private String id;   // 아이디 (로그인용, 중복 불가)
 
     @NotBlank(message = "이메일은 필수입니다.")
