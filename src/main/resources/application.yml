@@ -88,9 +88,9 @@ spring:
       on-profile: prod
 
   datasource:
-    url: jdbc:postgresql://3.34.xxx.xxx:5432/recorddb   # 실제 IP/호스트로 교체
+    url: record-db.czsw4i6quunb.ap-northeast-2.rds.amazonaws.com   # 실제 IP/호스트로 교체
     username: recorduser
-    password: ${DB_PASSWORD}                             # 환경변수로 주입
+    password: ${DB_PASSWORD}                             # 환경변수로 주입 : recordpass
 
   jpa:
     hibernate:
