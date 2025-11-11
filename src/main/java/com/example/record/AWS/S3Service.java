@@ -1,6 +1,6 @@
 // S3Service: AWS S3에 파일을 업로드하고, 업로드된 파일의 공개 URL을 반환하는 서비스 클래스입니다.
 
-/*
+
 package com.example.record.AWS;
 
 import lombok.RequiredArgsConstructor;
@@ -61,4 +61,4 @@ public class S3Service {
         return "https://" + bucket + ".s3." + region + ".amazonaws.com/" + fileName;
     }
 }
-*/
+
