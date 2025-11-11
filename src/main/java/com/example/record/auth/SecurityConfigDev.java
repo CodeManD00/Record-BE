@@ -1,5 +1,6 @@
+
 package com.example.record.auth;
-//개발용: 인증 우회 필터(DevAuthBypassFilter) 활성화
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,12 +28,11 @@ public class SecurityConfigDev {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // dev: 전부 허용
-                        .anyRequest().permitAll()
+                        .anyRequest().permitAll() // dev: 전부 허용
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // dev: 가짜 인증 주입(있어도 되고 없어도 됨)
+        // dev: 가짜 인증 주입 (있어도/없어도 OK)
         http.addFilterBefore(devAuthBypassFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

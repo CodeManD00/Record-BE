@@ -1,3 +1,4 @@
+
 package com.example.record.auth;
 
 import com.example.record.user.User;
@@ -31,25 +32,17 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
             throws IOException, ServletException {
 
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            // 1) dev 유저를 DB에서 찾고, 없으면 생성
-            // 
-            // 변경 사항:
-            // - findByEmail → findById로 변경
-            // - 이유: username을 id로 통일하면서 findByEmail 메서드를 제거했기 때문
-            // - dev@local 이메일을 가진 사용자를 찾기 위해 이메일로 조회하는 대신
-            //   고정된 dev 사용자 ID를 사용하도록 변경
             User devUser = userRepository.findById("dev").orElseGet(() -> {
                 User u = User.builder()
-                        .id("dev")  // 필수 필드인 id 추가
+                        .id("dev")
                         .email("dev@local")
                         .password(passwordEncoder.encode("devpass"))
                         .nickname("DEV")
-                        .role("USER")  // role 필드 추가
+                        .role("USER")
                         .build();
                 return userRepository.save(u);
             });
 
-            // role은 USER로 고정
             var auth = new UsernamePasswordAuthenticationToken(
                     devUser,
                     null,

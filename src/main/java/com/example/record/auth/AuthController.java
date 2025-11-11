@@ -1,3 +1,4 @@
+
 package com.example.record.auth;
 
 import com.example.record.auth.dto.SignupRequest;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
-    private static final long ACCESS_TOKEN_EXPIRES_MS = 1000L * 60 * 60;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -45,13 +44,13 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(
                 token,
                 "Bearer",
-                ACCESS_TOKEN_EXPIRES_MS,
+                jwtUtil.getExpirationMs(),
                 user.getRole()
         ));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) { // @Valid 추가
         User user = userRepository.findById(request.getId())
                 .orElseThrow(() -> new RuntimeException("아이디를 찾을 수 없습니다."));
 
@@ -64,7 +63,7 @@ public class AuthController {
         return ResponseEntity.ok(new TokenResponse(
                 token,
                 "Bearer",
-                ACCESS_TOKEN_EXPIRES_MS,
+                jwtUtil.getExpirationMs(),
                 user.getRole()
         ));
     }

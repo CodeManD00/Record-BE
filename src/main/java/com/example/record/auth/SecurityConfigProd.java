@@ -1,5 +1,6 @@
+
 package com.example.record.auth;
-//운영용: JwtAuthenticationFilter 활성화
+
 import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -33,16 +34,16 @@ public class SecurityConfigProd {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
 
-                        // 운영 보호
+                        // 보호 리소스
                         .requestMatchers("/ocr/**").authenticated()
                         .requestMatchers("/stt/**").authenticated()
+                        .requestMatchers("/reviews/**").authenticated()
 
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // 운영: JWT 필터 활성
         http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
                 UsernamePasswordAuthenticationFilter.class);
 
