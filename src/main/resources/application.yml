@@ -1,38 +1,44 @@
-# application.yml (single file with profiles)
+# application.yml (single file, no profiles)
 
-# ── Common (공통) ─────────────────────────────────────────────────────────────
 spring:
-  profiles:
-    active: dev                            # 기본 실행 프로필
   datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/recorddb}
+    username: ${DB_USER:recorduser}
+    password: ${DB_PASSWORD:recordpass}
     driver-class-name: org.postgresql.Driver
   jpa:
-    open-in-view: false
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}   # prod면 none 권장: export JPA_DDL_AUTO=none
+    show-sql: ${JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: ${JPA_OPEN_IN_VIEW:true}
   servlet:
     multipart:
-      max-file-size: 200MB                 # Whisper는 25MB 제한이므로 서버단에서 별도 가드 권장
+      max-file-size: 200MB
       max-request-size: 200MB
 
 openai:
   api:
-    key: ${OPENAI_API_KEY}                 # ▶ 환경변수로 주입 (Whisper/Chat/Image 공용 키)
+    key: ${OPENAI_API_KEY}  # Whisper/Chat/Image 공용 키
   url:
     transcription: https://api.openai.com/v1/audio/transcriptions
     chat: https://api.openai.com/v1/chat/completions
-    image: https://api.openai.com/v1/images/generations   # ✅ 추가: 이미지 생성 엔드포인트
+    image: https://api.openai.com/v1/images/generations
   model:
-    transcription: whisper-1               # ▶ Whisper API 모델명
-    chat: gpt-4o-mini                      # ▶ GPT 요약/질문 생성에 사용할 모델
-    image: gpt-image-1                     # ✅ 추가: 이미지 생성 모델
+    transcription: whisper-1
+    chat: gpt-4o-mini
+    image: gpt-image-1
   limits:
-    whisperMaxFileMB: 25                   # ▶ Whisper 단일 파일 권장 상한(서버에서 사전 체크)
-    imagePromptMaxChars: 900               # ✅ 추가: 이미지 프롬프트 안전 상한(오류 방지)
+    whisperMaxFileMB: ${OPENAI_WHISPER_MAX_MB:25}
+    imagePromptMaxChars: ${OPENAI_IMAGE_PROMPT_MAX:900}
 
 stt:
-  provider: openai                         # openai | (gcp|aws|azure 로 향후 전환 대비)
-  language: ko                             # 기본 인식 언어 (자동감지 쓰려면 제거)
+  provider: ${STT_PROVIDER:openai}
+  language: ${STT_LANGUAGE:ko}
   ffmpeg:
-    path: ${FFMPEG_PATH:ffmpeg}            # 필요 시 분할/포맷 변환 용
+    path: ${FFMPEG_PATH:ffmpeg}
 
 cloud:
   aws:
@@ -40,69 +46,17 @@ cloud:
       access-key: ${AWS_ACCESS_KEY_ID:}
       secret-key: ${AWS_SECRET_ACCESS_KEY:}
     region:
-      static: ap-northeast-2
+      static: ${AWS_REGION:ap-northeast-2}
     s3:
-      bucket: recording-bucket             # 이미지 생성/정적자원 용도
+      bucket: ${S3_BUCKET:recording-bucket}
 
-# 선택: JWT를 외부화(추후 JwtUtil에서 @Value로 받도록 개선)
 jwt:
   secret: ${JWT_SECRET:change-me-32bytes-minimum-aaaaaaaaaaaaaaa}
-  expiration-ms: ${JWT_EXPIRATION_MS:3600000}  # 1시간
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}
 
 logging:
   level:
-    root: INFO
-
----
-# ── DEV 프로필 ────────────────────────────────────────────────────────────────
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/recorddb
-    username: recorduser
-    password: recordpass
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: true
-
-logging:
-  level:
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
----
-# ── PROD 프로필 ───────────────────────────────────────────────────────────────
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  datasource:
-    url: jdbc:postgresql://3.34.xxx.xxx:5432/recorddb   # 실제 IP/호스트로 교체
-    username: recorduser
-    password: ${DB_PASSWORD}                             # 환경변수로 주입
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
-    open-in-view: false
-
-logging:
-  level:
-    org.springframework.web: INFO
-    org.hibernate.SQL: INFO
-    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    root: ${LOG_ROOT_LEVEL:INFO}
+    org.springframework.web: ${LOG_WEB_LEVEL:INFO}
+    org.hibernate.SQL: ${LOG_HIBERNATE_SQL:INFO}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_HIBERNATE_BINDER:WARN}
