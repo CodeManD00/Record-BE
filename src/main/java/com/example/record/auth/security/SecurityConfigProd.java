@@ -1,6 +1,9 @@
 
-package com.example.record.auth;
+package com.example.record.auth.security;
 
+import com.example.record.auth.jwt.JwtAuthenticationFilter;
+import com.example.record.auth.jwt.JwtUtil;
+import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,25 +18,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@Profile("dev")
+@Profile("prod")
 @RequiredArgsConstructor
-public class SecurityConfigDev {
+public class SecurityConfigProd {
 
+    private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
     private final AuthenticationEntryPoint authEntryPoint;
-    private final DevAuthBypassFilter devAuthBypassFilter;
 
     @Bean
-    public SecurityFilterChain filterChainDev(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChainProd(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // dev: 전부 허용
+                        .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers("/api/image/**").permitAll()
+
+                        // 보호 리소스
+                        .requestMatchers("/ocr/**").authenticated()
+                        .requestMatchers("/stt/**").authenticated()
+                        .requestMatchers("/reviews/**").authenticated()
+
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // dev: 가짜 인증 주입 (있어도/없어도 OK)
-        http.addFilterBefore(devAuthBypassFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
+                UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

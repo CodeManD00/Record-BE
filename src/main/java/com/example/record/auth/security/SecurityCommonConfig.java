@@ -1,5 +1,5 @@
 
-package com.example.record.auth;
+package com.example.record.auth.security;
 
 // 공통 Bean (PasswordEncoder, EntryPoint, AuthManager)
 import jakarta.servlet.http.HttpServletResponse;

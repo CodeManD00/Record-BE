@@ -1,5 +1,5 @@
 
-package com.example.record.auth;
+package com.example.record.auth.security;
 
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;

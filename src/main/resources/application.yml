@@ -1,6 +1,16 @@
-
-
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/recorddb}
     username: ${DB_USER:recorduser}
@@ -8,7 +18,7 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update}   # prod면 none 권장: export JPA_DDL_AUTO=none
+      ddl-auto: ${JPA_DDL_AUTO:update}
     show-sql: ${JPA_SHOW_SQL:true}
     properties:
       hibernate:
@@ -19,9 +29,16 @@ spring:
       max-file-size: 200MB
       max-request-size: 200MB
 
+# ⬇️ 여기부터는 spring 바깥(루트) 레벨
+app:
+  base-url: https://record.example.com
+  mail:
+    from: no-reply@record.example.com
+    reset-token-ttl-minutes: 30
+
 openai:
   api:
-    key: ${OPENAI_API_KEY}  # Whisper/Chat/Image 공용 키
+    key: ${OPENAI_API_KEY}
   url:
     transcription: https://api.openai.com/v1/audio/transcriptions
     chat: https://api.openai.com/v1/chat/completions
@@ -60,4 +77,3 @@ logging:
     org.springframework.web: ${LOG_WEB_LEVEL:INFO}
     org.hibernate.SQL: ${LOG_HIBERNATE_SQL:INFO}
     org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_HIBERNATE_BINDER:WARN}
-

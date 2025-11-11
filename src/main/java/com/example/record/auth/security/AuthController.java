@@ -1,8 +1,10 @@
 
-package com.example.record.auth;
+package com.example.record.auth.security;
 
-import com.example.record.auth.dto.SignupRequest;
-import com.example.record.auth.dto.LoginRequest;
+import com.example.record.auth.jwt.JwtUtil;
+import com.example.record.auth.jwt.TokenResponse;
+import com.example.record.auth.login.SignupRequest;
+import com.example.record.auth.login.LoginRequest;
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;
 import jakarta.validation.Valid;
