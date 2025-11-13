@@ -1,5 +1,5 @@
 
-package com.example.record.auth;
+package com.example.record.auth.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

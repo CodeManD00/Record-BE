@@ -1,5 +1,5 @@
 
-package com.example.record.auth.dto;
+package com.example.record.auth.login;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

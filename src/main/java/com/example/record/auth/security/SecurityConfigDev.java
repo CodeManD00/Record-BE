@@ -1,12 +1,10 @@
 
-package com.example.record.auth;
+package com.example.record.auth.security;
 
-import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,36 +14,25 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@Profile("prod")
+@Profile("dev")
 @RequiredArgsConstructor
-public class SecurityConfigProd {
+public class SecurityConfigDev {
 
-    private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final AuthenticationEntryPoint authEntryPoint;
+    private final DevAuthBypassFilter devAuthBypassFilter;
 
     @Bean
-    public SecurityFilterChain filterChainProd(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChainDev(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers("/api/image/**").permitAll()
-
-                        // 보호 리소스
-                        .requestMatchers("/ocr/**").authenticated()
-                        .requestMatchers("/stt/**").authenticated()
-                        .requestMatchers("/reviews/**").authenticated()
-
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll() // dev: 전부 허용
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
-                UsernamePasswordAuthenticationFilter.class);
+        // dev: 가짜 인증 주입 (있어도/없어도 OK)
+        http.addFilterBefore(devAuthBypassFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
