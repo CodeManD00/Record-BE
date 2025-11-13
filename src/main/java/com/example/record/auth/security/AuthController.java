@@ -167,6 +167,24 @@ public class AuthController {
     }
 
     /**
+     * 로그아웃 API
+     * 
+     * JWT는 stateless이므로 서버 측에서 특별한 처리가 필요 없지만,
+     * 클라이언트에서 로그아웃 요청을 받아 응답을 반환합니다.
+     * 실제 토큰 무효화는 클라이언트에서 처리합니다.
+     * 
+     * @return ApiResponse - 로그아웃 성공 메시지
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<?>> logout() {
+        // JWT는 stateless이므로 서버 측에서 특별한 처리가 필요 없음
+        // 클라이언트에서 토큰을 제거하면 됨
+        return ResponseEntity.ok(
+            new ApiResponse<>(true, null, "로그아웃 성공")
+        );
+    }
+
+    /**
      * 사용자 정보 응답 DTO
      */
     public record UserResponse(
