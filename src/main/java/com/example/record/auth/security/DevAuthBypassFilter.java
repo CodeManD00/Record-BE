@@ -31,7 +31,12 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
             throws IOException, ServletException {
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        // JWT 토큰이 있으면 dev 사용자를 주입하지 않음 (실제 로그인한 사용자 사용)
+        String authHeader = req.getHeader("Authorization");
+        boolean hasJwtToken = authHeader != null && authHeader.startsWith("Bearer ");
+
+        // SecurityContext에 인증 정보가 없고, JWT 토큰도 없을 때만 dev 사용자 주입
+        if (SecurityContextHolder.getContext().getAuthentication() == null && !hasJwtToken) {
             User devUser = userRepository.findById("dev").orElseGet(() -> {
                 User u = User.builder()
                         .id("dev")
