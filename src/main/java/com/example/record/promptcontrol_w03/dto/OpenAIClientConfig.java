@@ -26,10 +26,10 @@ public class OpenAIClientConfig {
     @Value("${openai.base-url:https://api.openai.com/v1}")
     private String baseUrl;
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
+    /**
+     * ObjectMapper는 JacksonConfig에서 @Primary로 등록된 빈을 사용합니다.
+     * 이 클래스에서는 WebClient만 제공합니다.
+     */
 
     @Bean
     public WebClient openAiWebClient() {

@@ -18,6 +18,14 @@ spring:
     multipart:
       max-file-size: 200MB
       max-request-size: 200MB
+  # Jackson 설정: Java 8 날짜/시간 타입(LocalDateTime 등)을 JSON으로 직렬화할 수 있도록 설정
+  # write-dates-as-timestamps: false → ISO-8601 형식 문자열로 변환 (예: "2024-11-13T09:50:13")
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    # Java 8 날짜/시간 모듈 자동 등록 (jackson-datatype-jsr310)
+    deserialization:
+      fail-on-unknown-properties: false
 
 openai:
   api:
