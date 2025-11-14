@@ -257,9 +257,23 @@ public class PromptService {
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    // DB 기반 프롬프트 생성 (기존 로직 유지, 서술만 생성)
+    // 뮤지컬 프롬프트 생성
     // ─────────────────────────────────────────────────────────────────────
+    /**
+     * 뮤지컬 이미지 생성 프롬프트를 생성합니다.
+     * 
+     * 분기 처리:
+     * 1. musical_db 테이블에서 title로 조회하여 데이터가 있는 경우:
+     *    - DB의 summary(줄거리), background(시대적/공간적 배경), main_character_count(주요 인물 수) 우선 사용
+     *    - musical_id로 musical_characters 테이블 조회하여 캐릭터 정보(gender, age, occupation, description) 활용
+     *    - 후기 분석 결과는 감정(emotion), 관계(relationship), 행동(actions), 조명(lighting) 등 보조 정보로만 사용
+     * 
+     * 2. musical_db 테이블에 데이터가 없는 경우:
+     *    - 사용자 후기 분석 결과만 사용하여 프롬프트 생성
+     *    - 후기에서 추출한 theme(주제), setting(배경), character(캐릭터) 정보 활용
+     */
     private String generateMusicalPrompt(PromptRequest input) {
+        // 1단계: 제목 정규화 (공백 제거, 특수 문자 제거)
         String normalizedTitle = "";
         if (input.getTitle() != null) {
             normalizedTitle = input.getTitle()
@@ -268,6 +282,8 @@ public class PromptService {
                     .replaceAll("[\\u00A0\\u2000-\\u200B\\u2028\\u2029\\uFEFF]", "");
         }
 
+        // 2단계: musical_db 테이블에서 title로 조회 시도
+        // 여러 방법으로 시도: 정규화된 제목 → 원본 제목 → 부분 일치 검색
         Optional<MusicalDb> musicalOpt = musicalDbRepository.findByTitle(normalizedTitle);
         if (!musicalOpt.isPresent() && input.getTitle() != null) {
             String originalTitle = input.getTitle().trim();
@@ -287,78 +303,118 @@ public class PromptService {
             }
         }
 
-        Optional<MusicalDb> musicalWithCharactersOpt = Optional.empty();
+        // 3단계: 후기 분석 (항상 수행 - DB 데이터가 있어도 보조 정보로 사용)
+        Map<String, Object> data = reviewAnalysisService.analyzeReview(input.getReview());
+
+        // 4단계: 분기 처리
+        // ============================================================
+        // 분기 1: musical_db 테이블에 데이터가 있는 경우
+        // ============================================================
         if (musicalOpt.isPresent()) {
             MusicalDb musical = musicalOpt.get();
             Long musicalId = musical.getId();
-            musicalWithCharactersOpt = musicalDbRepository.findByIdWithCharacters(musicalId);
-        }
-
-        Map<String, Object> data = reviewAnalysisService.analyzeReview(input.getReview());
-
-        if (musicalWithCharactersOpt.isPresent()) {
-            MusicalDb musical = musicalWithCharactersOpt.get();
-            List<MusicalCharacter> characters = musical.getCharacters();
-
-            String musicalSummary = musical.getSummary() != null ? musical.getSummary() : (String) data.get("theme");
-            String musicalBackground = musical.getBackground() != null ? musical.getBackground() : (String) data.get("setting");
+            
+            // musical_id로 musical_characters 테이블에서 캐릭터 정보 조회
+            Optional<MusicalDb> musicalWithCharactersOpt = musicalDbRepository.findByIdWithCharacters(musicalId);
+            
+            // DB에서 가져온 정보 우선 사용 (summary, background, main_character_count)
+            // 후기 분석 결과는 보조 정보로만 사용 (감정, 관계, 행동, 조명 등)
+            String musicalSummary = musical.getSummary() != null 
+                    ? musical.getSummary()  // DB의 summary 우선 사용
+                    : (String) data.get("theme");  // 없으면 후기 분석 결과 사용
+            
+            String musicalBackground = musical.getBackground() != null 
+                    ? musical.getBackground()  // DB의 background 우선 사용
+                    : (String) data.get("setting");  // 없으면 후기 분석 결과 사용
+            
             Integer characterCount = musical.getMainCharacterCount() != null
-                    ? musical.getMainCharacterCount()
-                    : (characters != null && !characters.isEmpty() ? characters.size() : 3);
+                    ? musical.getMainCharacterCount()  // DB의 main_character_count 우선 사용
+                    : 3;  // 기본값
 
+            // 캐릭터 정보 구성
             StringBuilder characterDetails = new StringBuilder();
-            if (characters != null && !characters.isEmpty()) {
-                int maxCharacters = Math.min(characters.size(), Math.min(characterCount, 5));
-                for (int i = 0; i < maxCharacters; i++) {
-                    MusicalCharacter character = characters.get(i);
-                    if (i > 0) characterDetails.append(", ");
+            
+            if (musicalWithCharactersOpt.isPresent()) {
+                List<MusicalCharacter> characters = musicalWithCharactersOpt.get().getCharacters();
+                
+                // musical_characters 테이블에 데이터가 있는 경우: DB의 캐릭터 정보 활용
+                if (characters != null && !characters.isEmpty()) {
+                    // 최대 5명까지만 사용 (성능 및 프롬프트 길이 제한)
+                    int maxCharacters = Math.min(characters.size(), Math.min(characterCount, 5));
+                    
+                    for (int i = 0; i < maxCharacters; i++) {
+                        MusicalCharacter character = characters.get(i);
+                        if (i > 0) characterDetails.append(", ");
 
-                    String charInfo = character.getName();
-                    StringBuilder charAttributes = new StringBuilder();
-                    if (character.getAge() != null && !character.getAge().trim().isEmpty()) {
-                        charAttributes.append(translateToEnglish(character.getAge()));
+                        // 캐릭터 이름
+                        String charInfo = character.getName();
+                        StringBuilder charAttributes = new StringBuilder();
+                        
+                        // DB에서 가져온 캐릭터 속성들을 영어로 번역하여 조합
+                        // 나이대 (age)
+                        if (character.getAge() != null && !character.getAge().trim().isEmpty()) {
+                            charAttributes.append(translateToEnglish(character.getAge()));
+                        }
+                        // 성별 (gender)
+                        if (character.getGender() != null && !character.getGender().trim().isEmpty()) {
+                            if (charAttributes.length() > 0) charAttributes.append(" ");
+                            charAttributes.append(translateToEnglish(character.getGender()));
+                        }
+                        // 직업 (occupation)
+                        if (character.getOccupation() != null && !character.getOccupation().trim().isEmpty()) {
+                            if (charAttributes.length() > 0) charAttributes.append(" ");
+                            charAttributes.append(translateToEnglish(character.getOccupation()));
+                        }
+                        // 인물 설명 (description)
+                        if (character.getDescription() != null && !character.getDescription().trim().isEmpty()) {
+                            if (charAttributes.length() > 0) charAttributes.append(", ");
+                            charAttributes.append(translateToEnglish(character.getDescription()));
+                        }
+                        
+                        // 속성이 있으면 괄호로 묶어서 추가
+                        if (charAttributes.length() > 0) {
+                            charInfo += " (a " + charAttributes + ")";
+                        }
+                        characterDetails.append(charInfo);
                     }
-                    if (character.getGender() != null && !character.getGender().trim().isEmpty()) {
-                        if (charAttributes.length() > 0) charAttributes.append(" ");
-                        charAttributes.append(translateToEnglish(character.getGender()));
-                    }
-                    if (character.getOccupation() != null && !character.getOccupation().trim().isEmpty()) {
-                        if (charAttributes.length() > 0) charAttributes.append(" ");
-                        charAttributes.append(translateToEnglish(character.getOccupation()));
-                    }
-                    if (character.getDescription() != null && !character.getDescription().trim().isEmpty()) {
-                        if (charAttributes.length() > 0) charAttributes.append(", ");
-                        charAttributes.append(translateToEnglish(character.getDescription()));
-                    }
-                    if (charAttributes.length() > 0) {
-                        charInfo += " (a " + charAttributes + ")";
-                    }
-                    characterDetails.append(charInfo);
+                } else {
+                    // musical_characters 테이블에 데이터가 없는 경우: 캐릭터 수만 사용
+                    characterDetails.append(characterCount).append(" distinct characters");
                 }
             } else {
+                // 캐릭터 정보를 가져올 수 없는 경우: 캐릭터 수만 사용
                 characterDetails.append(characterCount).append(" distinct characters");
             }
 
+            // DB 데이터 기반 프롬프트 생성
+            // DB 정보: summary, background, characterCount, characterDetails
+            // 후기 분석 정보: emotion, relationship, actions, lighting
             return String.format(
                     "A %s musical theater scene about %s, set in %s and depicting %s, featuring exactly %d characters only: %s. " +
                             "The scene must include exactly %d characters—no extras or background people. With %s, under %s. " +
                             "There is no visible text, letters, words, captions, logos, or watermarks in the image.",
-                    translateToEnglish((String) data.get("emotion")),
-                    translateToEnglish(musicalSummary),
-                    translateToEnglish(musicalBackground),
-                    translateToEnglish((String) data.get("relationship")),
-                    characterCount,
-                    translateToEnglish(characterDetails.toString()),
-                    characterCount,
-                    translateToEnglish((String) data.get("actions")),
-                    translateToEnglish((String) data.get("lighting"))
+                    translateToEnglish((String) data.get("emotion")),  // 후기 분석: 감정
+                    translateToEnglish(musicalSummary),  // DB 우선: 줄거리
+                    translateToEnglish(musicalBackground),  // DB 우선: 배경
+                    translateToEnglish((String) data.get("relationship")),  // 후기 분석: 관계
+                    characterCount,  // DB 우선: 인물 수
+                    translateToEnglish(characterDetails.toString()),  // DB 우선: 캐릭터 정보
+                    characterCount,  // 인물 수 반복 (강조)
+                    translateToEnglish((String) data.get("actions")),  // 후기 분석: 행동
+                    translateToEnglish((String) data.get("lighting"))  // 후기 분석: 조명
             );
         }
 
-        // DB 정보가 없을 때: 후기 분석만 사용
-        String musicalSummary = (String) data.get("theme");
-        String musicalBackground = (String) data.get("setting");
+        // ============================================================
+        // 분기 2: musical_db 테이블에 데이터가 없는 경우
+        // ============================================================
+        // 사용자 후기 분석 결과만 사용하여 프롬프트 생성
+        
+        // 후기 분석에서 추출한 정보 사용
+        String musicalSummary = (String) data.get("theme");  // 후기에서 추출한 주제
+        String musicalBackground = (String) data.get("setting");  // 후기에서 추출한 배경
 
+        // 후기에서 추출한 캐릭터 정보 구성
         StringBuilder characterPart = new StringBuilder();
         String cleanChar1 = cleanCharacterDescription(Objects.toString(data.get("character1"), ""));
         String cleanChar2 = cleanCharacterDescription(Objects.toString(data.get("character2"), ""));
@@ -383,16 +439,17 @@ public class PromptService {
             characterPart.append("the main characters");
         }
 
+        // 후기 분석 기반 프롬프트 생성
         return String.format(
                 "A %s musical theater scene about %s, set in %s and depicting %s, featuring %s. " +
                         "With %s, under %s. There is no visible text, letters, words, captions, logos, or watermarks in the image.",
-                translateToEnglish((String) data.get("emotion")),
-                translateToEnglish(musicalSummary != null ? musicalSummary : ""),
-                translateToEnglish(musicalBackground != null ? musicalBackground : ""),
-                translateToEnglish((String) data.get("relationship") != null ? (String) data.get("relationship") : ""),
-                translateToEnglish(characterPart.toString()),
-                translateToEnglish((String) data.get("actions") != null ? (String) data.get("actions") : ""),
-                translateToEnglish((String) data.get("lighting") != null ? (String) data.get("lighting") : "")
+                translateToEnglish((String) data.get("emotion")),  // 후기 분석: 감정
+                translateToEnglish(musicalSummary != null ? musicalSummary : ""),  // 후기 분석: 주제
+                translateToEnglish(musicalBackground != null ? musicalBackground : ""),  // 후기 분석: 배경
+                translateToEnglish((String) data.get("relationship") != null ? (String) data.get("relationship") : ""),  // 후기 분석: 관계
+                translateToEnglish(characterPart.toString()),  // 후기 분석: 캐릭터
+                translateToEnglish((String) data.get("actions") != null ? (String) data.get("actions") : ""),  // 후기 분석: 행동
+                translateToEnglish((String) data.get("lighting") != null ? (String) data.get("lighting") : "")  // 후기 분석: 조명
         );
     }
 

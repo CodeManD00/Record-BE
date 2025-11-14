@@ -23,8 +23,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class Gpt1PicService {
 
-    /** 인스타그램 4:5 고정 */
-    private static final String FIXED_SIZE = "1080x1350";
+    /** 인스타그램 4:5 비율에 가장 가까운 DALL-E 3 지원 크기 */
+    private static final String FIXED_SIZE = "1024x1792";  // DALL-E 3 지원 크기: 1024x1024, 1792x1024, 1024x1792
 
     @Value("${openai.limits.imagePromptMaxChars:900}")
     private int imagePromptMaxChars;
@@ -35,20 +35,28 @@ public class Gpt1PicService {
     private final WebClient openAiWebClient;
     private final ObjectMapper om;
 
-    /** gpt-image-1로 단일 이미지 생성 → URL 반환 (b64 수신 시 예외 처리/후속 구현 지점 명시) */
+    /** DALL-E 3로 단일 이미지 생성 → URL 반환 (b64 수신 시 예외 처리/후속 구현 지점 명시) */
     public String generateSingleImageUrl(String prompt) {
         try {
             String safePrompt = prompt == null ? "" :
                     (prompt.length() <= imagePromptMaxChars ? prompt : prompt.substring(0, imagePromptMaxChars));
 
+            // OpenAI DALL-E 3 API 요청 형식
+            // 참고: 
+            // - DALL-E 3는 model 파라미터를 사용하며, size는 "1024x1024", "1792x1024", "1024x1792"만 지원
+            // - DALL-E 2는 model 파라미터를 사용하지 않으며, size는 "256x256", "512x512", "1024x1024" 지원
+            // - DALL-E 3는 n 파라미터를 지원하지 않음 (항상 1개만 생성)
+            // - 여기서는 DALL-E 3를 사용하되, 1080x1350은 지원되지 않으므로 가장 가까운 "1024x1792" 사용
+            Map<String, Object> requestBody = new java.util.HashMap<>();
+            requestBody.put("model", "dall-e-3");  // DALL-E 3 모델 사용 (gpt-image-1은 존재하지 않음)
+            requestBody.put("prompt", safePrompt);
+            requestBody.put("size", FIXED_SIZE);  // DALL-E 3 지원 크기: 1024x1024, 1792x1024, 1024x1792 (4:5 비율에 가장 가까움)
+            requestBody.put("quality", "standard");  // "standard" 또는 "hd" (고해상도, 선택사항)
+            // n 파라미터는 DALL-E 3에서 지원하지 않으므로 제외 (항상 1개만 생성)
+            
             String res = openAiWebClient.post()
                     .uri(imagesUrl)
-                    .bodyValue(Map.of(
-                            "model", "gpt-image-1",
-                            "prompt", safePrompt,
-                            "size", FIXED_SIZE,
-                            "n", 1
-                    ))
+                    .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(String.class)
                     .timeout(Duration.ofSeconds(60))

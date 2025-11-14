@@ -39,12 +39,23 @@ public class ImageController {
         this.gpt1PicService = gpt1PicService;
     }
 
+    /** ✅ JSON만 받는 실제 생성 엔드포인트 (파일 없이) */
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ImageResponse> generateImage(@RequestBody PromptRequest request) {
+        return generateImageInternal(request, null);
+    }
+
     /** ✅ JSON + 파일을 함께 받는 실제 생성 엔드포인트 */
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ImageResponse> generateImage(
+    @PostMapping(value = "/with-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ImageResponse> generateImageWithFile(
             @RequestPart("request") PromptRequest request,                           // JSON 파트
             @RequestPart(value = "file", required = false) MultipartFile file       // 파일 파트(선택)
     ) {
+        return generateImageInternal(request, file);
+    }
+
+    /** 내부 이미지 생성 로직 (공통 처리) */
+    private ResponseEntity<ImageResponse> generateImageInternal(PromptRequest request, MultipartFile file) {
         try {
             // (선택) 장르 검증: 뮤지컬/밴드 아니면 400 (단, basePrompt 재생성 모드는 스킵)
             if ((request.getBasePrompt() == null || request.getBasePrompt().isBlank())
@@ -85,7 +96,7 @@ public class ImageController {
             return ResponseEntity.badRequest().body(ImageResponse.error(e.getMessage()));
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(ImageResponse.error("Internal server error"));
+            return ResponseEntity.status(500).body(ImageResponse.error("Internal server error: " + e.getMessage()));
         }
     }
 
