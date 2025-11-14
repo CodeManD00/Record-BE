@@ -3,9 +3,10 @@ package com.example.record.STT.controller;
 import com.example.record.STT.dto.TranscriptionResponse;
 import com.example.record.STT.entres.Transcription;
 import com.example.record.STT.entres.TranscriptionRepository;
-import com.example.record.STT.service.SttGptService;
 import com.example.record.STT.service.SttService;
 import com.example.record.STT.service.WhisperService;
+import com.example.record.auth.security.AuthUser;
+import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +26,19 @@ public class SttController {
 
     private final WhisperService whisperService;
     private final SttService sttService;
-    private final SttGptService sttGptService;
     private final TranscriptionRepository repo;
 
     /** 🔥 1) STT 수행 후 DB 저장 (이거 하나만 사용) */
     @PostMapping("/transcribe-and-save")
     public ResponseEntity<?> transcribeAndSave(
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal com.example.record.user.User user) {
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        if (authUser == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        User user = authUser.getUser();
 
-        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
@@ -71,9 +75,12 @@ public class SttController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getTranscription(
             @PathVariable Long id,
-            @AuthenticationPrincipal com.example.record.user.User user) {
-
-        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        if (authUser == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        User user = authUser.getUser();
 
         return repo.findById(id)
                 .filter(t -> t.getUser().equals(user))
@@ -84,9 +91,12 @@ public class SttController {
     /** 📄 3) 사용자 소유 목록 조회 */
     @GetMapping("/list")
     public ResponseEntity<?> listTranscriptions(
-            @AuthenticationPrincipal com.example.record.user.User user) {
-
-        if (user == null) return ResponseEntity.status(401).body("Unauthorized");
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        if (authUser == null) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+        User user = authUser.getUser();
 
         List<Transcription> list = repo.findByUser(user);
 
@@ -116,6 +126,7 @@ public class SttController {
                 .createdAt(t.getCreatedAt())
                 .transcript(t.getResultText())
                 .summary(t.getSummary())
+                // 엔티티에 finalReview 필드가 없으므로 여기서는 null
                 .finalReview(null)
                 .build();
     }
