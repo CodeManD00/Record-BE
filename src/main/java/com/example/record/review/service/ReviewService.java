@@ -13,10 +13,12 @@ import com.example.record.review.repository.ReviewRepository;
 import com.example.record.review.repository.TicketRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
@@ -24,6 +26,7 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final TicketRepository ticketRepository;
     private final QuestionTemplateRepository questionTemplateRepository;
+    private final ReviewQuestionService reviewQuestionService;
 
     @Transactional
     public ReviewCreateResponse createReview(ReviewCreateRequest request) {
@@ -63,6 +66,24 @@ public class ReviewService {
         }
 
         Review saved = reviewRepository.save(review);
+        
+        // 후기 생성 후, 사용자의 후기 개수를 확인하여 맞춤 질문 생성 여부 결정
+        // 3개, 6개, 9개... 이런 식으로 3개씩 늘어날 때마다 분석
+        String userId = ticket.getUser().getId();
+        long reviewCount = reviewRepository.findByTicket_User_IdOrderByCreatedAtAsc(userId).size();
+        
+        // 3개, 6개, 9개... 이런 식으로 3개씩 늘어날 때마다 분석
+        if (reviewCount % 3 == 0 && reviewCount >= 3) {
+            log.info("사용자 {}의 후기 개수가 {}개가 되어 맞춤 질문 생성 시작", userId, reviewCount);
+            try {
+                // 비동기로 실행하여 응답 지연 방지 (선택적)
+                reviewQuestionService.analyzeAndGenerateCustomQuestions(userId);
+            } catch (Exception e) {
+                log.error("맞춤 질문 생성 중 오류 발생: {}", e.getMessage(), e);
+                // 오류가 발생해도 후기 생성은 성공한 것으로 처리
+            }
+        }
+        
         return ReviewCreateResponse.builder()
                 .reviewId(saved.getId())
                 .createdAt(saved.getCreatedAt())

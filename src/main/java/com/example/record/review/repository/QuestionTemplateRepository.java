@@ -36,14 +36,19 @@ public interface QuestionTemplateRepository extends JpaRepository<QuestionTempla
      * 특정 장르의 질문 템플릿을 조회합니다.
      * 
      * 사용 예시:
-     * - "MUSICAL" 장르의 모든 질문 조회
-     * - "BAND" 장르의 모든 질문 조회
-     * - "COMMON" 장르의 모든 질문 조회 (모든 장르에 공통)
+     * - "musical" 또는 "MUSICAL" 장르의 모든 질문 조회 (대소문자 구분 없음)
+     * - "band" 또는 "BAND" 장르의 모든 질문 조회
+     * - "common" 또는 "COMMON" 장르의 모든 질문 조회 (모든 장르에 공통)
      * 
-     * @param genre 장르 (예: "MUSICAL", "BAND", "COMMON")
+     * 변경 사항:
+     * - 대소문자 구분 없이 조회하도록 수정 (LOWER() 함수 사용)
+     * - 이유: DB에 저장된 장르가 대문자일 수도 있고 소문자일 수도 있어서
+     * 
+     * @param genre 장르 (예: "musical", "MUSICAL", "band", "BAND", "common", "COMMON")
      * @return 해당 장르의 질문 템플릿 목록
      */
-    List<QuestionTemplate> findByGenre(String genre);
+    @Query(value = "SELECT * FROM questions_templates WHERE LOWER(genre) = LOWER(:genre)", nativeQuery = true)
+    List<QuestionTemplate> findByGenre(@Param("genre") String genre);
 
     /**
      * 카테고리와 장르를 모두 고려한 질문 템플릿을 조회합니다.
@@ -67,11 +72,15 @@ public interface QuestionTemplateRepository extends JpaRepository<QuestionTempla
      * - 뮤지컬 리뷰 작성 시 랜덤 질문 3개 제공
      * - 밴드 리뷰 작성 시 랜덤 질문 3개 제공
      * 
-     * @param genre 장르
+     * 변경 사항:
+     * - 대소문자 구분 없이 조회하도록 수정 (LOWER() 함수 사용)
+     * - 이유: DB에 저장된 장르가 대문자일 수도 있고 소문자일 수도 있어서
+     * 
+     * @param genre 장르 (대소문자 구분 없음)
      * @param limit 조회할 질문 개수
      * @return 랜덤하게 선택된 질문 템플릿 목록
      */
-    @Query("SELECT qt FROM QuestionTemplate qt WHERE qt.genre = :genre ORDER BY RANDOM() LIMIT :limit")
+    @Query(value = "SELECT * FROM questions_templates WHERE LOWER(genre) = LOWER(:genre) ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<QuestionTemplate> findRandomByGenre(@Param("genre") String genre, @Param("limit") int limit);
 
     /**
@@ -84,7 +93,7 @@ public interface QuestionTemplateRepository extends JpaRepository<QuestionTempla
      * @param limit 조회할 질문 개수
      * @return 랜덤하게 선택된 질문 템플릿 목록
      */
-    @Query("SELECT qt FROM QuestionTemplate qt WHERE qt.category = :category AND qt.genre = :genre ORDER BY RANDOM() LIMIT :limit")
+    @Query(value = "SELECT * FROM questions_templates WHERE category = :category AND genre = :genre ORDER BY RANDOM() LIMIT :limit", nativeQuery = true)
     List<QuestionTemplate> findRandomByCategoryAndGenre(@Param("category") String category, @Param("genre") String genre, @Param("limit") int limit);
 }
 

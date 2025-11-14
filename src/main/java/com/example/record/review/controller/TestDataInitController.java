@@ -96,19 +96,19 @@ public class TestDataInitController {
             QuestionTemplate musical1 = QuestionTemplate.builder()
                     .templateText("이 뮤지컬에서 가장 인상깊었던 장면은 무엇인가요?")
                     .category("PERFORMANCE")  // 공연 자체에 대한 질문
-                    .genre("MUSICAL")
+                    .genre("musical")  // 소문자로 저장 (DB와 일치시키기 위해)
                     .build();
 
             QuestionTemplate musical2 = QuestionTemplate.builder()
                     .templateText("배우들의 연기력은 어떠했나요?")
                     .category("ACTING")  // 연기력에 대한 질문
-                    .genre("MUSICAL")
+                    .genre("musical")  // 소문자로 저장
                     .build();
 
             QuestionTemplate musical3 = QuestionTemplate.builder()
                     .templateText("음악과 무대 연출은 만족스러웠나요?")
                     .category("MUSIC")  // 음악과 연출에 대한 질문
-                    .genre("MUSICAL")
+                    .genre("musical")  // 소문자로 저장
                     .build();
 
             // 밴드용 질문 템플릿들
@@ -119,13 +119,13 @@ public class TestDataInitController {
             QuestionTemplate band1 = QuestionTemplate.builder()
                     .templateText("밴드의 무대 에너지는 어떠했나요?")
                     .category("ENERGY")  // 에너지에 대한 질문
-                    .genre("BAND")
+                    .genre("band")  // 소문자로 저장 (DB와 일치시키기 위해)
                     .build();
 
             QuestionTemplate band2 = QuestionTemplate.builder()
                     .templateText("음악의 질과 사운드는 만족스러웠나요?")
                     .category("SOUND")  // 사운드에 대한 질문
-                    .genre("BAND")
+                    .genre("band")  // 소문자로 저장
                     .build();
 
             // 공통 질문 템플릿들
@@ -133,10 +133,97 @@ public class TestDataInitController {
             // 1. 전체 평가: 장르에 관계없이 공연 전체에 대한 평가
             // 2. 비교 분석: 서로 다른 장르의 공연을 비교할 때 사용
             // 3. 기본 질문: 모든 리뷰에 포함될 수 있는 기본적인 질문
+            // 뮤지컬 추가 질문들
+            QuestionTemplate musical4 = QuestionTemplate.builder()
+                    .templateText("이 공연을 보게 된 계기는?")
+                    .category("OVERALL")
+                    .genre("musical")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate musical5 = QuestionTemplate.builder()
+                    .templateText("가장 인상 깊었던 순간은?")
+                    .category("PERFORMANCE")
+                    .genre("musical")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate musical6 = QuestionTemplate.builder()
+                    .templateText("다시 본다면 어떤 점이 기대되나요?")
+                    .category("OVERALL")
+                    .genre("musical")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate musical7 = QuestionTemplate.builder()
+                    .templateText("주인공의 성장 과정이 잘 드러났나요?")
+                    .category("STORY")
+                    .genre("musical")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate musical8 = QuestionTemplate.builder()
+                    .templateText("무대 디자인과 조명은 어떠했나요?")
+                    .category("STAGE")
+                    .genre("musical")  // 소문자로 저장
+                    .build();
+
+            // 밴드 추가 질문들
+            QuestionTemplate band3 = QuestionTemplate.builder()
+                    .templateText("이 공연을 보게 된 계기는?")
+                    .category("OVERALL")
+                    .genre("band")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate band4 = QuestionTemplate.builder()
+                    .templateText("가장 인상 깊었던 순간은?")
+                    .category("PERFORMANCE")
+                    .genre("band")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate band5 = QuestionTemplate.builder()
+                    .templateText("다시 본다면 어떤 점이 기대되나요?")
+                    .category("OVERALL")
+                    .genre("band")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate band6 = QuestionTemplate.builder()
+                    .templateText("밴드 멤버들의 호흡은 어떠했나요?")
+                    .category("PERFORMANCE")
+                    .genre("band")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate band7 = QuestionTemplate.builder()
+                    .templateText("관객과의 소통은 어떠했나요?")
+                    .category("PERFORMANCE")
+                    .genre("band")  // 소문자로 저장
+                    .build();
+
+            // 공통 질문 템플릿들
             QuestionTemplate common1 = QuestionTemplate.builder()
                     .templateText("전체적으로 이 공연을 어떻게 평가하시나요?")
                     .category("OVERALL")  // 전체적인 평가에 대한 질문
-                    .genre("COMMON")
+                    .genre("common")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate common2 = QuestionTemplate.builder()
+                    .templateText("이 공연을 보게 된 계기는?")
+                    .category("OVERALL")
+                    .genre("common")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate common3 = QuestionTemplate.builder()
+                    .templateText("가장 인상 깊었던 순간은?")
+                    .category("PERFORMANCE")
+                    .genre("common")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate common4 = QuestionTemplate.builder()
+                    .templateText("다시 본다면 어떤 점이 기대되나요?")
+                    .category("OVERALL")
+                    .genre("common")  // 소문자로 저장
+                    .build();
+
+            QuestionTemplate common5 = QuestionTemplate.builder()
+                    .templateText("친구나 가족에게 이 공연을 추천하시겠어요?")
+                    .category("OVERALL")
+                    .genre("common")  // 소문자로 저장
                     .build();
 
             // 모든 질문 템플릿을 한 번에 저장
@@ -145,12 +232,15 @@ public class TestDataInitController {
             // 2. 트랜잭션: 모든 템플릿이 성공하거나 모두 실패하는 원자성 보장
             // 3. 성능: 개별 저장보다 빠른 처리 속도
             questionTemplateRepository.saveAll(List.of(
-                    musical1, musical2, musical3,
-                    band1, band2,
-                    common1
+                    // 뮤지컬 질문 (8개)
+                    musical1, musical2, musical3, musical4, musical5, musical6, musical7, musical8,
+                    // 밴드 질문 (7개)
+                    band1, band2, band3, band4, band5, band6, band7,
+                    // 공통 질문 (5개)
+                    common1, common2, common3, common4, common5
             ));
 
-            return ResponseEntity.ok("질문 템플릿 생성 완료: 총 6개");
+            return ResponseEntity.ok("질문 템플릿 생성 완료: 총 20개 (뮤지컬 8개, 밴드 7개, 공통 5개)");
         } catch (Exception e) {
             // 질문 템플릿 생성 실패 시 오류 메시지 반환
             return ResponseEntity.badRequest().body("질문 템플릿 생성 실패: " + e.getMessage());

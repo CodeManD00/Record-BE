@@ -4,6 +4,10 @@ import com.example.record.review.entity.Review;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     /**
@@ -21,4 +25,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * ORDER BY ... LIMIT ... OFFSET ...
      */
     Page<Review> findByTicket_User_Id(String userId, Pageable pageable);
+
+    /**
+     * 특정 사용자의 모든 리뷰를 생성 시간 순으로 조회합니다.
+     * 
+     * @param userId 사용자 ID
+     * @return 해당 사용자의 리뷰 목록 (생성 시간 오름차순)
+     */
+    @Query("SELECT r FROM Review r WHERE r.ticket.user.id = :userId ORDER BY r.createdAt ASC")
+    List<Review> findByTicket_User_IdOrderByCreatedAtAsc(@Param("userId") String userId);
 }
