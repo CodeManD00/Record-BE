@@ -1,4 +1,3 @@
-
 package com.example.record.STT.controller;
 
 import com.example.record.STT.dto.TranscriptionResponse;
@@ -26,50 +25,15 @@ public class SttController {
 
     private final WhisperService whisperService;
     private final SttService sttService;
-    private final SttGptService sttGptService; // (지금은 사용 안 하지만 확장 대비)
+    private final SttGptService sttGptService;
     private final TranscriptionRepository repo;
 
-    /** 1) STT만 수행 (저장 없음) */
-    @PostMapping("/transcribe-only")
-    public ResponseEntity<?> transcribeOnly(@RequestParam("file") MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            return ResponseEntity.badRequest().body("File is empty");
-        }
-        final String original = file.getOriginalFilename();
-        final String suffix = resolveSuffix(original);
-
-        try {
-            byte[] bytes = file.getBytes();
-            bytes = sttService.maybeReencodeToM4a(bytes, suffix);
-
-            String transcript = whisperService.transcribe(bytes, original, "ko");
-            if (!StringUtils.hasText(transcript)) {
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
-                        .body("Failed to extract text from audio");
-            }
-
-            TranscriptionResponse resp = TranscriptionResponse.builder()
-                    .id(null)
-                    .fileName(original != null ? original : "uploaded_audio")
-                    .createdAt(LocalDateTime.now())
-                    .transcript(transcript)
-                    .summary(null)
-                    .finalReview(null)
-                    .build();
-
-            return ResponseEntity.ok(resp);
-
-        } catch (IllegalArgumentException tooBig) {
-            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(tooBig.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(422).body("Failed to process audio: " + e.getMessage());
-        }
-    }
-
-    /** 2) STT 수행 후 DB 저장 */
+    /** 🔥 1) STT 수행 후 DB 저장 (이거 하나만 사용) */
     @PostMapping("/transcribe-and-save")
-    public ResponseEntity<?> transcribeAndSave(@RequestParam("file") MultipartFile file,
-                                               @AuthenticationPrincipal com.example.record.user.User user) {
+    public ResponseEntity<?> transcribeAndSave(
+            @RequestParam("file") MultipartFile file,
+            @AuthenticationPrincipal com.example.record.user.User user) {
+
         if (user == null) return ResponseEntity.status(401).body("Unauthorized");
         if (file == null || file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
@@ -103,10 +67,12 @@ public class SttController {
         }
     }
 
-    /** 3) 단건 조회 */
+    /** 🔍 2) 단건 조회 */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTranscription(@PathVariable Long id,
-                                              @AuthenticationPrincipal com.example.record.user.User user) {
+    public ResponseEntity<?> getTranscription(
+            @PathVariable Long id,
+            @AuthenticationPrincipal com.example.record.user.User user) {
+
         if (user == null) return ResponseEntity.status(401).body("Unauthorized");
 
         return repo.findById(id)
@@ -115,20 +81,23 @@ public class SttController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /** 4) 사용자 소유 목록 조회 */
+    /** 📄 3) 사용자 소유 목록 조회 */
     @GetMapping("/list")
-    public ResponseEntity<?> listTranscriptions(@AuthenticationPrincipal com.example.record.user.User user) {
+    public ResponseEntity<?> listTranscriptions(
+            @AuthenticationPrincipal com.example.record.user.User user) {
+
         if (user == null) return ResponseEntity.status(401).body("Unauthorized");
 
         List<Transcription> list = repo.findByUser(user);
-        return ResponseEntity.ok(list.stream()
-                .map(t -> Map.of(
+
+        return ResponseEntity.ok(
+                list.stream().map(t -> Map.of(
                         "id", t.getId(),
                         "fileName", t.getFileName(),
                         "createdAt", t.getCreatedAt(),
                         "hasSummary", StringUtils.hasText(t.getSummary())
-                ))
-                .toList());
+                )).toList()
+        );
     }
 
     /* ========================= 헬퍼 ========================= */
