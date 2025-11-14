@@ -1,4 +1,3 @@
-
 package com.example.record.auth.security;
 
 import com.example.record.auth.jwt.JwtAuthenticationFilter;
@@ -32,8 +31,13 @@ public class SecurityConfigProd {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // 인증 없이 접근 가능한 공개 API들
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-id").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/forgot/temporary-password").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
 
                         // 보호 리소스
@@ -46,8 +50,11 @@ public class SecurityConfigProd {
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        http.addFilterBefore(new JwtAuthenticationFilter(jwtUtil, userRepository),
-                UsernamePasswordAuthenticationFilter.class);
+        // JWT 인증 필터 (여기서 principal = AuthUser 로 세팅)
+        http.addFilterBefore(
+                new JwtAuthenticationFilter(jwtUtil, userRepository),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         return http.build();
     }

@@ -1,6 +1,7 @@
 
 package com.example.record.auth.jwt;
 
+import com.example.record.auth.security.AuthUser;
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;
 import io.jsonwebtoken.JwtException;
@@ -48,7 +49,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                     UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null, authorities);
+                            new UsernamePasswordAuthenticationToken(new AuthUser(user), null, authorities);
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }

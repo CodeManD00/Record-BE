@@ -49,7 +49,7 @@ public class DevAuthBypassFilter extends OncePerRequestFilter {
             });
 
             var auth = new UsernamePasswordAuthenticationToken(
-                    devUser,
+                    new AuthUser(devUser),
                     null,
                     List.of(new SimpleGrantedAuthority("ROLE_USER"))
             );
