@@ -100,24 +100,8 @@ public class ImageController {
         }
     }
 
-    // 🧪 임시 테스트 엔드포인트 (JSON 단독)
-    @PostMapping(value = "/test", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ImageResponse> generateImageTest(@RequestBody PromptRequest request) {
-        try {
-            String base = (request.getBasePrompt() != null && !request.getBasePrompt().isBlank())
-                    ? request.getBasePrompt()
-                    : (request.getTitle() + " - " + request.getReview());
-            String prompt = buildMergedPrompt(base, request.getImageRequest());
+    //  임시 테스트 엔드포인트 (JSON 단독) - 삭제
 
-            ImageResponse response = new ImageResponse();
-            response.setPrompt(prompt);
-            response.setImageUrl("https://via.placeholder.com/1080x1350/FF6B6B/FFFFFF?text=Test+Image");
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(ImageResponse.error("Internal server error"));
-        }
-    }
 
     /** basePrompt 뒤에 extra(imageRequest)를 자연스럽게 덧붙이고, NO_TEXT_RULE을 보증한다. */
     private String buildMergedPrompt(String basePrompt, String extra) {
