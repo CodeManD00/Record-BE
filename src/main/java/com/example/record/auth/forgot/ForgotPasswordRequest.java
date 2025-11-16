@@ -1,5 +1,5 @@
 package com.example.record.auth.forgot;
-
+// 지금은 안씀 미래를 위해
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
