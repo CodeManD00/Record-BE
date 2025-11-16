@@ -44,7 +44,7 @@ app:
   base-url: https://record.example.com
   mail:
     from: no-reply@record.example.com
-    reset-token-ttl-minutes: 30
+
 
 openai:
   api:
