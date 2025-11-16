@@ -39,7 +39,7 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
-# ⬇️ 여기부터는 spring 바깥(루트) 레벨
+#  여기부터는 spring 바깥(루트) 레벨
 app:
   base-url: https://record.example.com
   mail:
