@@ -35,7 +35,7 @@ public class SecurityConfigProd {
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-id").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
+                        //.requestMatchers(HttpMethod.POST, "/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/forgot/temporary-password").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
