@@ -1,4 +1,4 @@
-package com.example.record.review;
+package com.example.record.STTorText.review;
 
 public record ReviewRequest(
         Long transcriptionId,

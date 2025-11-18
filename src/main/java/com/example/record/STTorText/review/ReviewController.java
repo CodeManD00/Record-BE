@@ -3,10 +3,11 @@ package com.example.record.STTorText.review;
 
 
 import com.example.record.auth.security.AuthUser;
-import com.example.record.entity.Transcription;
+import com.example.record.STTorText.entity.Transcription;
 import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

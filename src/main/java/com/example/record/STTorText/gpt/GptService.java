@@ -1,4 +1,4 @@
-package com.example.record.gpt;
+package com.example.record.STTorText.gpt;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

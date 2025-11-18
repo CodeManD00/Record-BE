@@ -1,7 +1,7 @@
 package com.example.record.STTorText.text;
 
 
-import com.example.record.gpt.GptService;
+import com.example.record.STTorText.gpt.GptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

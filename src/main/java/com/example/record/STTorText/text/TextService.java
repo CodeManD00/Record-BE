@@ -1,7 +1,6 @@
 package com.example.record.STTorText.text;
 
-package com.example.record.text;
-
+import com.example.record.STTorText.gpt.GptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +8,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TextService {
 
-    private final GptClient gptClient;
+    private final GptService gptService;
 
     /** 1) 5줄 요약 */
     public String summarize(String text) {
@@ -22,7 +21,7 @@ public class TextService {
                 원문:
                 """ + text;
 
-        return gptClient.ask(prompt);
+        return gptService.ask(prompt);
     }
 
     /** 2) 원문을 자르지 않고 정리 */
@@ -37,6 +36,6 @@ public class TextService {
                 원문:
                 """ + text;
 
-        return gptClient.ask(prompt);
+        return gptService.ask(prompt);
     }
 }

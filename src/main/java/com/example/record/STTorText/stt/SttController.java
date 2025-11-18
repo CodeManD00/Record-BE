@@ -1,11 +1,12 @@
-package com.example.record.stt;
+package com.example.record.STTorText.stt;
 
-import com.example.record.entity.Transcription;
-import com.example.record.entity.TranscriptionRepository;
+import com.example.record.STTorText.entity.Transcription;
+import com.example.record.STTorText.entity.TranscriptionRepository;
 import com.example.record.auth.security.AuthUser;
 import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;

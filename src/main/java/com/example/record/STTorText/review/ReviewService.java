@@ -1,9 +1,9 @@
 package com.example.record.STTorText.review;
 
 
-import com.example.record.entity.Transcription;
-import com.example.record.entity.TranscriptionRepository;
-import com.example.record.gpt.GptService;
+import com.example.record.STTorText.entity.Transcription;
+import com.example.record.STTorText.entity.TranscriptionRepository;
+import com.example.record.STTorText.gpt.GptService;
 import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
