@@ -1,6 +1,7 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}  # 기본 프로필을 dev로 설정
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -18,6 +19,7 @@ spring:
     username: ${DB_USER:recorduser}
     password: ${DB_PASSWORD:recordpass}
     driver-class-name: org.postgresql.Driver
+
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
@@ -26,25 +28,33 @@ spring:
       hibernate:
         format_sql: true
     open-in-view: ${JPA_OPEN_IN_VIEW:true}
+
   servlet:
     multipart:
       max-file-size: 200MB
       max-request-size: 200MB
-  # Jackson 설정: Java 8 날짜/시간 타입(LocalDateTime 등)을 JSON으로 직렬화할 수 있도록 설정
-  # write-dates-as-timestamps: false → ISO-8601 형식 문자열로 변환 (예: "2024-11-13T09:50:13")
+
   jackson:
     serialization:
       write-dates-as-timestamps: false
-    # Java 8 날짜/시간 모듈 자동 등록 (jackson-datatype-jsr310)
     deserialization:
       fail-on-unknown-properties: false
 
-#  여기부터는 spring 바깥(루트) 레벨
+  # 정적 리소스 설정 (로컬 uploads 폴더 서빙)
+  web:
+    resources:
+      static-locations: classpath:/static/, file:./uploads/
+
+# spring 바깥(루트) 레벨 설정
 app:
   base-url: https://record.example.com
   mail:
     from: no-reply@record.example.com
 
+  # 로컬 프로필 이미지 업로드 설정
+  upload:
+    profile-image-dir: uploads/profile-images          # 실제 저장 폴더 (프로젝트 루트 기준)
+    profile-image-url-prefix: /uploads/profile-images  # 클라이언트에 내려줄 URL prefix
 
 openai:
   api:
