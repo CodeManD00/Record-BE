@@ -143,29 +143,33 @@ public class AuthController {
     }
 
     /** 로그인한 사용자 정보 조회 */
-    @GetMapping("/me")
-    public ResponseEntity<ApiResponse<?>> getCurrentUser(
-            @org.springframework.security.core.annotation.AuthenticationPrincipal AuthUser authUser) {
 
-        if (authUser == null) {
-            return ResponseEntity.badRequest().body(
-                    new ApiResponse<>(false, null, "인증된 사용자 정보를 찾을 수 없습니다.")
-            );
-        }
+    //    /** 로그인한 사용자 정보 조회 */
+//    @GetMapping("/me")
+//    public ResponseEntity<ApiResponse<?>> getCurrentUser(
+//            @org.springframework.security.core.annotation.AuthenticationPrincipal AuthUser authUser) {
+//
+//        if (authUser == null) {
+//            return ResponseEntity.badRequest().body(
+//                    new ApiResponse<>(false, null, "인증된 사용자 정보를 찾을 수 없습니다.")
+//            );
+//        }
+//
+//        User user = authUser.getUser();
+//
+//        UserResponse userResponse = new UserResponse(
+//                user.getId(),
+//                user.getEmail(),
+//                user.getNickname(),
+//                user.getRole()
+//        );
+//
+//        return ResponseEntity.ok(
+//                new ApiResponse<>(true, userResponse, "사용자 정보 조회 성공")
+//        );
+//    }
 
-        User user = authUser.getUser();
 
-        UserResponse userResponse = new UserResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getNickname(),
-                user.getRole()
-        );
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, userResponse, "사용자 정보 조회 성공")
-        );
-    }
 
     /** 로그아웃 */
     @PostMapping("/logout")

@@ -13,13 +13,30 @@ public class UserService {
     private final LocalFileStorageService localFileStorageService;
 
     @Transactional
+    public User updateProfile(User user, UserController.UpdateProfileRequest req) {
+
+        if (req.getNickname() != null) {
+            user.setNickname(req.getNickname());
+        }
+        if (req.getEmail() != null) {
+            user.setEmail(req.getEmail());
+        }
+        if (req.getIsAccountPrivate() != null) {
+            user.setIsAccountPrivate(req.getIsAccountPrivate());  // ⭐ FIX — 올바른 setter
+        }
+
+        return userRepository.save(user);
+    }
+
+
+    @Transactional
     public User updateProfileImage(User user, MultipartFile file) {
         validateImage(file);
 
-        // 1) 로컬에 저장
+        // 1) 이미지 저장
         String imageUrl = localFileStorageService.saveProfileImage(user.getId(), file);
 
-        // 2) User 엔티티에 URL 저장
+        // 2) URL 저장
         user.setProfileImage(imageUrl);
 
         // 3) DB 저장
@@ -31,7 +48,7 @@ public class UserService {
             throw new IllegalArgumentException("이미지 파일이 비어 있습니다.");
         }
 
-        // 용량 제한 (예: 5MB)
+        // 용량 제한 (5MB)
         long maxSize = 5 * 1024 * 1024;
         if (file.getSize() > maxSize) {
             throw new IllegalArgumentException("이미지 용량은 5MB 이하여야 합니다.");

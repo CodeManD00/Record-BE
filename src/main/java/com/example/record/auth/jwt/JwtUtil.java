@@ -17,7 +17,7 @@ public class JwtUtil {
     @Value("${jwt.secret:12345678901234567890123456789012}") // fallback for dev
     private String secret;
 
-    @Value("${jwt.expiration-ms:3600000}")
+    @Value("${jwt.expiration-ms:2592000000}")
     private long expirationMs;
 
     private Key key;

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -35,15 +36,17 @@ public class User {
     @Column(columnDefinition = "TEXT")
     private String favorite;
 
-    // ✅ 프로필 이미지 (로컬에 저장된 파일 URL 또는 경로)
+    // ⭐ 실제 DB에 저장되는 필드
+    @Column(name = "is_account_private", nullable = false)
+    @Builder.Default
+    private Boolean isAccountPrivate = false;
+
     @Column(name = "profile_image", length = 500)
     private String profileImage;
 
-    @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 }

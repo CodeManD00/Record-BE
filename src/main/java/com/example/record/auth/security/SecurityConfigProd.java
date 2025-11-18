@@ -40,6 +40,12 @@ public class SecurityConfigProd {
                         .requestMatchers(HttpMethod.POST, "/auth/forgot/temporary-password").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/users/me").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/users/me/profile-image").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/users/me").authenticated()
+
+
                         // 보호 리소스
                         .requestMatchers("/ocr/**").authenticated()
                         .requestMatchers("/stt/**").authenticated()
