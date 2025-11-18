@@ -11,7 +11,7 @@ import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
-public class ReviewService {
+public class ReviewServiceForBoth {
 
     private final GptService gpt;
     private final TranscriptionRepository repo;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/reviews")
 public class ReviewController {
 
-    private final ReviewService reviewService;
+    private final ReviewServiceForBoth reviewService;
 
     @PostMapping("/summarize")
     public ResponseEntity<?> summarize(
