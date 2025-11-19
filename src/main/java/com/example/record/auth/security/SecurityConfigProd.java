@@ -31,7 +31,15 @@ public class SecurityConfigProd {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // 인증 없이 접근 가능한 공개 API들
+
+                        // 🟩 Swagger(OpenAPI) 허용
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // 공개 API들
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/forgot-id").permitAll()
@@ -40,23 +48,25 @@ public class SecurityConfigProd {
                         .requestMatchers(HttpMethod.POST, "/auth/forgot/temporary-password").permitAll()
                         .requestMatchers("/api/image/**").permitAll()
 
+                        // 사용자 인증 필요
                         .requestMatchers(HttpMethod.GET, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/users/me").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/users/me/profile-image").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/users/me").authenticated()
-
 
                         // 보호 리소스
                         .requestMatchers("/ocr/**").authenticated()
                         .requestMatchers("/stt/**").authenticated()
                         .requestMatchers("/reviews/**").authenticated()
 
+                        // 관리자 전용
                         .requestMatchers("/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // JWT 인증 필터 (여기서 principal = AuthUser 로 세팅)
+        // JWT 인증 필터
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userRepository),
                 UsernamePasswordAuthenticationFilter.class

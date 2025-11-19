@@ -28,6 +28,7 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0' //Swagger
 	// --- Spring starters ---
 	implementation 'org.springframework.boot:spring-boot-starter-web'            // MVC (Tomcat)
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'        // WebClient (필요 시만 유지)
