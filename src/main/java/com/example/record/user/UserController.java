@@ -2,6 +2,7 @@ package com.example.record.user;
 
 import com.example.record.auth.security.AuthUser;
 import com.example.record.common.ApiResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,15 @@ public class UserController {
         private String nickname;
         private String email;
         private Boolean isAccountPrivate;
+    }
+
+    @Getter
+    @Setter
+    public static class UpdateNicknameRequest {
+        @NotBlank
+        private String userId;
+        @NotBlank
+        private String nickname;
     }
 
     @Getter
@@ -82,31 +92,78 @@ public class UserController {
     }
 
     // ────────────────────────────────
-    // 3. 프로필 이미지 업로드
+    // 3. 닉네임 변경 (JWT 토큰 불필요)
+    // ────────────────────────────────
+    @PatchMapping("/nickname")
+    public ResponseEntity<ApiResponse<?>> updateNickname(
+            @Valid @RequestBody UpdateNicknameRequest req
+    ) {
+        // 사용자 ID 유효성 검사
+        if (req.getUserId() == null || req.getUserId().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, null, "사용자 ID를 입력해주세요.")
+            );
+        }
+
+        // 사용자 존재 여부 확인
+        User user = userRepository.findById(req.getUserId().trim())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 닉네임 유효성 검사
+        if (req.getNickname() == null || req.getNickname().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, null, "닉네임을 입력해주세요.")
+            );
+        }
+
+        String trimmedNickname = req.getNickname().trim();
+        if (trimmedNickname.length() > 30) {
+            return ResponseEntity.badRequest().body(
+                    new ApiResponse<>(false, null, "닉네임은 30자 이하여야 합니다.")
+            );
+        }
+
+        User updated = userService.updateNickname(user, trimmedNickname);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, new UserProfileResponse(updated), "닉네임이 변경되었습니다.")
+        );
+    }
+
+    // ────────────────────────────────
+    // 4. 프로필 이미지 업로드 (JWT 토큰 불필요, 기존 이미지 덮어씌우기)
     // ────────────────────────────────
     @PutMapping(
             value = "/me/profile-image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<ApiResponse<?>> uploadProfileImage(
-            @AuthenticationPrincipal AuthUser authUser,
+            @RequestPart("userId") String userId,
             @RequestPart("file") MultipartFile file
     ) {
-
-        if (authUser == null) {
+        // 사용자 ID 유효성 검사
+        if (userId == null || userId.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(
-                    new ApiResponse<>(false, null, "인증된 사용자 정보를 찾을 수 없습니다.")
+                    new ApiResponse<>(false, null, "사용자 ID를 입력해주세요.")
             );
         }
 
-        User updated = userService.updateProfileImage(authUser.getUser(), file);
+        // 사용자 존재 여부 확인
+        User user = userRepository.findById(userId.trim())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 프로필 이미지 업데이트 (기존 이미지 덮어씌우기)
+        // - 기존 이미지가 있으면 자동으로 삭제됨 (UserService.updateProfileImage 내부 처리)
+        // - 새 이미지 저장 및 DB 업데이트
+        User updated = userService.updateProfileImage(user, file);
+        
         return ResponseEntity.ok(
                 new ApiResponse<>(true, new UserProfileResponse(updated), "프로필 이미지가 변경되었습니다.")
         );
     }
 
     // ────────────────────────────────
-    // 4. 회원탈퇴
+    // 5. 회원탈퇴
     // ────────────────────────────────
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<?>> deleteAccount(

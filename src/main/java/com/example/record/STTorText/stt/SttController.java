@@ -2,11 +2,10 @@ package com.example.record.STTorText.stt;
 
 import com.example.record.STTorText.entity.Transcription;
 import com.example.record.STTorText.entity.TranscriptionRepository;
-import com.example.record.auth.security.AuthUser;
 import com.example.record.user.User;
+import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
@@ -19,20 +18,44 @@ public class SttController {
     private final WhisperService whisperService;
     private final SttService sttService;
     private final TranscriptionRepository repo;
+    private final UserRepository userRepository;
 
+    /**
+     * STT 변환 및 저장 (JWT 토큰 불필요)
+     */
     @PostMapping("/transcribe-and-save")
     public ResponseEntity<?> transcribe(
             @RequestParam("file") MultipartFile file,
-            @AuthenticationPrincipal AuthUser authUser
+            @RequestParam("userId") String userId
     ) {
-        if (authUser == null) return ResponseEntity.status(401).body("Unauthorized");
-        User user = authUser.getUser();
+        // 사용자 ID 유효성 검사
+        if (userId == null || userId.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("사용자 ID를 입력해주세요.");
+        }
+
+        // 사용자 존재 여부 확인
+        User user = userRepository.findById(userId.trim())
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다: " + userId));
 
         try {
+            System.out.println("=== STT 요청 정보 ===");
+            System.out.println("원본 파일명: " + file.getOriginalFilename());
+            System.out.println("Content-Type: " + file.getContentType());
+            System.out.println("파일 크기: " + file.getSize() + " bytes");
+            
             byte[] bytes = file.getBytes();
+            // 모든 파일을 m4a 형식으로 변환 (Whisper API 호환성 보장)
             bytes = sttService.maybeReencodeToM4a(bytes, file.getOriginalFilename());
+            
+            // 변환 후 파일명을 .m4a로 변경
+            String filename = file.getOriginalFilename();
+            if (filename != null && filename.contains(".")) {
+                filename = filename.substring(0, filename.lastIndexOf('.')) + ".m4a";
+            } else {
+                filename = "audio.m4a";
+            }
 
-            String transcript = whisperService.transcribe(bytes, file.getOriginalFilename(), "ko");
+            String transcript = whisperService.transcribe(bytes, filename, "ko");
 
             Transcription t = Transcription.builder()
                     .user(user)

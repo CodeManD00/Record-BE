@@ -32,6 +32,27 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    /**
+     * 닉네임만 변경하는 메서드
+     * 
+     * @param user 변경할 사용자
+     * @param nickname 새로운 닉네임
+     * @return 업데이트된 사용자 정보
+     */
+    @Transactional
+    public User updateNickname(User user, String nickname) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            throw new IllegalArgumentException("닉네임을 입력해주세요.");
+        }
+
+        if (nickname.length() > 30) {
+            throw new IllegalArgumentException("닉네임은 30자 이하여야 합니다.");
+        }
+
+        user.setNickname(nickname.trim());
+        return userRepository.save(user);
+    }
+
     // ────────────────────────────────────────────
     //  프로필 이미지 변경 (기존 이미지 삭제 + 새 이미지 저장)
     // ────────────────────────────────────────────

@@ -29,15 +29,15 @@ public class User {
     @Column(length = 30, nullable = false)
     private String nickname;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     @Builder.Default
     private String role = "USER";
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 255)
     private String favorite;
 
     // ⭐ 실제 DB에 저장되는 필드
-    @Column(name = "is_account_private", nullable = false)
+    @Column(name = "is_account_private")
     @Builder.Default
     private Boolean isAccountPrivate = false;
 

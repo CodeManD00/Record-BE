@@ -33,6 +33,38 @@ public class BandDb {
     private Long id;
 
     /**
+     * 밴드 제목 (공연 제목)
+     * 
+     * 예시: "콜드플레이 월드 투어", "라디오헤드 라이브"
+     */
+    @Column(name = "title", length = 50, nullable = false)
+    private String title;
+
+    /**
+     * 밴드 요약
+     * 
+     * 밴드의 기본 정보나 특징을 간단히 설명합니다.
+     */
+    @Column(name = "summary", columnDefinition = "TEXT")
+    private String summary;
+
+    /**
+     * 밴드 배경
+     * 
+     * 밴드의 배경이나 역사를 나타냅니다.
+     */
+    @Column(name = "background", length = 50)
+    private String background;
+
+    /**
+     * 주요 멤버 수
+     * 
+     * 밴드의 주요 멤버 수를 나타냅니다.
+     */
+    @Column(name = "main_member_count")
+    private Integer mainMemberCount;
+
+    /**
      * 밴드 이름
      * 
      * 예시: "콜드플레이", "라디오헤드", "아델"

@@ -78,7 +78,7 @@ public class MusicalCharacter {
      * 2. 분류: 나이별 캐릭터 분류
      * 3. 질문 생성: 나이에 맞는 질문 생성
      */
-    @Column(name = "age", length = 10)
+    @Column(name = "age")
     private String age;
 
     /**
