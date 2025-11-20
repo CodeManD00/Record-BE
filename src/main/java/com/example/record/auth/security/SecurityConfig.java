@@ -27,40 +27,44 @@ public class SecurityConfig {
 
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable()) // 프론트에서만 필요하다면 disable 가능
+                .cors(cors -> cors.disable())   // RN 테스트 중엔 열어도 됨
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // ====== 공개 허용 구간 ======
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        // ========================
+                        // 로그인/회원가입/이메일 인증
+                        // ========================
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/signup",
+                                "/auth/email/**",
+                                "/auth/forgot-*",
+                                "/auth/reset-password",
+                                "/auth/password/**"
+                        ).permitAll()
 
-                        .requestMatchers("/STTorText/**").permitAll()
-
+                        // ========================
+                        // 개발 중 개방
+                        // ========================
                         .requestMatchers("/ocr/**").permitAll()
                         .requestMatchers("/stt/**").permitAll()
+                        .requestMatchers("/STTorText/**").permitAll()
                         .requestMatchers("/generate-image/**").permitAll()
-                        .requestMatchers("/generate-image/with-file").permitAll()
-                        .requestMatchers("/review-questions/**").permitAll()
-                        .requestMatchers("/reviews/**").permitAll()
-                        .requestMatchers("/review/**").permitAll()
+                        .requestMatchers("/upload/**").permitAll()
+                        .requestMatchers("/users/**").permitAll()
+                        .requestMatchers("/test/**", "/api/test/**").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
 
-
-
-
-
-                        // 편의용 테스트 엔드포인트
-                        .requestMatchers("/test").permitAll()
-                        .requestMatchers("/api/test/**").permitAll()
-
-                        // ====== 나머지는 JWT 필요 ======
-                        .anyRequest().authenticated()
+                        // ========================
+                        // 나머지 모두 허용
+                        // ========================
+                        .anyRequest().permitAll()
                 )
 
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint));
 
-        // ===== JWT 인증 필터 추가 =====
+        // JWT 필터 (현재 dev에서는 모든 요청에 대해 실행 → 문제 없음)
         http.addFilterBefore(
                 new JwtAuthenticationFilter(jwtUtil, userRepository),
                 UsernamePasswordAuthenticationFilter.class

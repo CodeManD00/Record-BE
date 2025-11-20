@@ -2,7 +2,7 @@ package com.example.record.promptcontrol_w03.controlbuild;
 
 import com.example.record.promptcontrol_w03.dto.ImageResponse;
 import com.example.record.promptcontrol_w03.dto.PromptRequest;
-import com.example.record.promptcontrol_w03.service.Gpt1PicService;
+import com.example.record.promptcontrol_w03.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,33 +17,37 @@ public class ImageController {
     private static final String NO_TEXT_RULE =
             "No captions, no letters, no words, no logos, no watermarks.";
 
-    private final Gpt1PicService gpt1PicService;
+    private final ImageService imageService;
 
     /** ★ JSON 기반 이미지 생성 */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ImageResponse> generateJson(@RequestBody PromptRequest request) {
-        return ResponseEntity.ok(generateInternal(request.getBasePrompt(), request.getImageRequest()));
+        return ResponseEntity.ok(
+                generateInternal(request.getBasePrompt(), request.getImageRequest())
+        );
     }
 
     /** ★ JSON + 파일 기반 이미지 생성 */
     @PostMapping(value = "/with-file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ImageResponse> generateWithFile(
             @RequestPart("request") PromptRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "file", required = false) MultipartFile ignoredFile
     ) {
-        return ResponseEntity.ok(generateInternal(request.getBasePrompt(), request.getImageRequest()));
+        return ResponseEntity.ok(
+                generateInternal(request.getBasePrompt(), request.getImageRequest())
+        );
     }
 
     /** ★ 최종 이미지 생성 공통 처리 */
     private ImageResponse generateInternal(String basePrompt, String imageRequest) {
 
         if (basePrompt == null || basePrompt.isBlank()) {
-            return ImageResponse.error("basePrompt (English 5-sentence summary) is required");
+            return ImageResponse.error("basePrompt is required (English summary text).");
         }
 
         String finalPrompt = buildPrompt(basePrompt, imageRequest);
 
-        String imageUrl = gpt1PicService.generateSingleImageUrl(finalPrompt);
+        String imageUrl = imageService.generateImage(finalPrompt);
 
         ImageResponse res = new ImageResponse();
         res.setPrompt(finalPrompt);

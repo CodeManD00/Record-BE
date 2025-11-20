@@ -30,15 +30,15 @@ public class ReviewQuestionController {
 
     /**
      * 사용자에게 표시할 질문들을 가져옵니다.
-     * 
-     * @param user 현재 인증된 사용자 (JWT 토큰에서 자동으로 주입됨)
+     *
+     * @param user  현재 인증된 사용자 (JWT 토큰에서 자동으로 주입됨)
      * @param genre 장르 (예: "밴드", "연극/뮤지컬", "뮤지컬")
      * @return 질문 텍스트 목록
-     * 
+     * <p>
      * 응답 형식:
      * - 성공: { "success": true, "data": ["질문1", "질문2", "질문3"], "message": "질문 조회 성공" }
      * - 실패: { "success": false, "data": null, "message": "에러 메시지" }
-     * 
+     * <p>
      * 왜 @AuthenticationPrincipal을 사용하나요?
      * 1. 보안: JWT 토큰에서 사용자 정보를 안전하게 추출합니다.
      * 2. 편의성: 수동으로 토큰을 파싱할 필요가 없습니다.
@@ -49,31 +49,19 @@ public class ReviewQuestionController {
             @AuthenticationPrincipal User user,
             @RequestParam String genre) {
         try {
-            // 인증된 사용자 확인
-            if (user == null) {
-                return ResponseEntity.badRequest().body(
-                    new ApiResponse<>(false, null, "인증된 사용자 정보를 찾을 수 없습니다.")
-                );
-            }
+            // ★ 로그인하지 않아도 허용
+            String userId = (user != null) ? user.getId() : null;
 
-            // 사용자 ID와 장르를 기반으로 질문 조회
-            // ReviewQuestionService가 사용자의 티켓 개수에 따라 적절한 질문을 반환합니다.
-            // - 티켓 3개 이하: DB의 기본 질문 템플릿에서 장르별 랜덤 질문 제공
-            // - 티켓 3개 이상: 사용자 맞춤 질문 풀에서 랜덤 질문 제공 (없으면 기본 질문 사용)
-            List<String> questions = reviewQuestionService.getQuestionsForUser(user.getId(), genre);
+            // userId가 null이면 ReviewQuestionService에서 기본 질문 제공
+            List<String> questions = reviewQuestionService.getQuestionsForUser(userId, genre);
 
-            // 성공 응답 반환
             return ResponseEntity.ok(
-                new ApiResponse<>(true, questions, "질문 조회 성공")
+                    new ApiResponse<>(true, questions, "질문 조회 성공")
             );
+
         } catch (Exception e) {
-            // 예외 발생 시 에러 응답 반환
-            // 왜 try-catch를 사용하나요?
-            // 1. 예상치 못한 오류가 발생해도 서버가 중단되지 않음
-            // 2. 사용자에게 적절한 오류 메시지 전달 가능
-            // 3. 로그를 통해 문제 원인 파악 용이
             return ResponseEntity.badRequest().body(
-                new ApiResponse<>(false, null, "질문을 가져올 수 없습니다: " + e.getMessage())
+                    new ApiResponse<>(false, null, "질문을 가져올 수 없습니다: " + e.getMessage())
             );
         }
     }

@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}  # 기본 프로필을 dev로 설정
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   mail:
     host: smtp.gmail.com
@@ -40,33 +40,34 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
-  # 정적 리소스 설정 (로컬 uploads 폴더 서빙)
   web:
     resources:
       static-locations: classpath:/static/, file:./uploads/
 
-# spring 바깥(루트) 레벨 설정
 app:
   base-url: https://record.example.com
   mail:
     from: no-reply@record.example.com
 
-  # 로컬 프로필 이미지 업로드 설정
   upload:
-    profile-image-dir: uploads/profile-images          # 실제 저장 폴더 (프로젝트 루트 기준)
-    profile-image-url-prefix: /uploads/profile-images  # 클라이언트에 내려줄 URL prefix
+    profile-image-dir: uploads/profile-images
+    profile-image-url-prefix: /uploads/profile-images
 
 openai:
   api:
     key: ${OPENAI_API_KEY}
+
+  # Config에서 baseUrl 제거했으므로 full URL 그대로 사용 가능
   url:
     transcription: https://api.openai.com/v1/audio/transcriptions
     chat: https://api.openai.com/v1/chat/completions
     image: https://api.openai.com/v1/images/generations
+
   model:
     transcription: whisper-1
     chat: gpt-4o-mini
     image: gpt-image-1
+
   limits:
     whisperMaxFileMB: ${OPENAI_WHISPER_MAX_MB:25}
     imagePromptMaxChars: ${OPENAI_IMAGE_PROMPT_MAX:900}

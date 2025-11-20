@@ -1,5 +1,6 @@
 package com.example.record.STTorText.review;
 
+import com.example.record.STTorText.dto.SummaryResponse;
 import com.example.record.promptcontrol_w03.service.OpenAIChatService;
 import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +13,10 @@ public class ReviewServiceForBoth {
 
     private final OpenAIChatService openAI;
 
-    /** =========================================
+    /** ===========================================================
      * ① 후기 정리 (말투 유지 / 길이 유지 / 자연스럽게 정돈)
-     * ========================================= */
-    public String organize(ReviewRequest req, User user) {
+     * =========================================================== */
+    public SummaryResponse organize(ReviewRequest req, User user) {
         String input = req.text();
         if (!StringUtils.hasText(input)) {
             throw new IllegalArgumentException("review text is required");
@@ -28,21 +29,22 @@ public class ReviewServiceForBoth {
                 - 말투, 감정선, 표현 분위기를 유지
                 - 너무 딱딱하지 않고 사용자 후기 느낌을 살릴 것
                 - 불필요한 반복/오타/비문만 자연스럽게 고치기
-                - 불릿포인트 금지
                 후기:
                 %s
                 """.formatted(input);
 
-        return openAI.complete(
+        String organized = openAI.complete(
                 "You rewrite Korean text naturally while keeping the user's tone.",
                 prompt
         );
+
+        return new SummaryResponse(organized);
     }
 
-    /** =========================================
-     * ② 영어 5줄 요약 (이미지 프롬프트 base)
-     * ========================================= */
-    public String summarize(ReviewRequest req, User user) {
+    /** ===========================================================
+     * ② 영어 3~5줄 요약 (이미지 basePrompt 용)
+     * =========================================================== */
+    public SummaryResponse summarize(ReviewRequest req, User user) {
         String base = req.text();
         if (!StringUtils.hasText(base)) {
             throw new IllegalArgumentException("review text is required");
@@ -56,15 +58,16 @@ public class ReviewServiceForBoth {
             - No meta comments about the summary.
             - Make it suitable as a base prompt for an image-generation model.
             - Do NOT mention text, captions, or logos.
-            
+
             Review:
             %s
             """.formatted(base);
 
-        return openAI.complete(
+        String summary = openAI.complete(
                 "You translate and summarize Korean text into natural English suitable for image prompt usage.",
                 prompt
         );
-    }
 
+        return new SummaryResponse(summary);
+    }
 }

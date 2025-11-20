@@ -25,10 +25,11 @@ public class OpenAIChatService {
     private String model;
 
     public String complete(String systemPrompt, String userPrompt) {
+
         ChatRequest req = new ChatRequest();
         req.model = model;
         req.temperature = 0.7;
-        req.max_tokens = 200;   // ★ 안전하게 제한
+        req.max_tokens = 200;
         req.messages = List.of(
                 Message.text("system", systemPrompt),
                 Message.text("user", userPrompt)
@@ -52,15 +53,16 @@ public class OpenAIChatService {
                 throw new RuntimeException("Empty OpenAI response");
             }
 
-            return res.choices.get(0).message.content.get(0).text.trim();
+            return res.choices.get(0).message.content.trim(); // ★ 여기서 content는 문자열
 
         } catch (Exception e) {
             throw new RuntimeException("OpenAI chat call failed: " + e.getMessage(), e);
         }
     }
 
-    // ==== 내부 DTO ====
-
+    // ========================
+    // DTO
+    // ========================
     @Data
     static class ChatRequest {
         public String model;
@@ -73,24 +75,13 @@ public class OpenAIChatService {
     @Data
     static class Message {
         public String role;
-        public List<Content> content;
+        public String content; // ★ 변경됨
 
         public static Message text(String role, String text) {
             Message m = new Message();
             m.role = role;
-            m.content = List.of(new Content("text", text));
+            m.content = text; // ★ 리스트 대신 문자열
             return m;
-        }
-
-        @Data
-        static class Content {
-            public String type;
-            public String text;
-
-            public Content(String type, String text) {
-                this.type = type;
-                this.text = text;
-            }
         }
     }
 
