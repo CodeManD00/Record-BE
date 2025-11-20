@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .requestMatchers("/generate-image/with-file").permitAll()
                         .requestMatchers("/review-questions/**").permitAll()
                         .requestMatchers("/reviews/**").permitAll()
+                        .requestMatchers("/review/**").permitAll()
+
 
 
 

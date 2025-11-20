@@ -25,38 +25,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
-    /** ===== JWT 검사 제외 경로(SAFE LIST) ===== */
-    private static final String[] EXCLUDE_PATHS = {
-            "/auth",
-            "/reviews",
-            "/stt",
-            "/ocr",
-            "/generate-image",
-            "/STTorText",
-            "/review-questions"
-    };
-
+    /** ===========================================================
+     *  JWT 검사 제외 경로 (startsWith 확실하게 체크)
+     * =========================================================== */
     private boolean isExcluded(String path) {
-        for (String prefix : EXCLUDE_PATHS) {
-            if (path.startsWith(prefix)) return true;
-        }
-        return false;
+        return path.startsWith("/auth")
+                || path.startsWith("/text")
+                || path.startsWith("/review")         // /review, /review/organize, /review/summarize
+                || path.startsWith("/reviews")        // 혹시 남아 있는 이전 버전
+                || path.startsWith("/stt")
+                || path.startsWith("/ocr")
+                || path.startsWith("/generate-image")
+                || path.startsWith("/STTorText")
+                || path.startsWith("/review-questions")
+                || path.startsWith("/api/test")
+                || path.startsWith("/test");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+                                    FilterChain chain)
+            throws ServletException, IOException {
 
         String path = request.getRequestURI();
 
-        /** ===== 1) 허용 경로면 JWT 검사하지 않고 바로 통과 ===== */
+        /** 1) JWT 필요 없는 경로는 필터 통과 */
         if (isExcluded(path)) {
             chain.doFilter(request, response);
             return;
         }
 
-        /** ===== 2) 여기부터 JWT 검사 ===== */
+        /** 2) 여기부터 JWT 인증 검사 */
         final String authHeader = request.getHeader("Authorization");
 
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
@@ -65,24 +65,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+
         try {
             if (jwtUtil.validateToken(token)) {
+
                 String id = jwtUtil.getIdFromToken(token);
                 String role = jwtUtil.getRoleFromToken(token);
 
                 User user = userRepository.findById(id).orElse(null);
 
-                if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (user != null &&
+                        SecurityContextHolder.getContext().getAuthentication() == null) {
+
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(new AuthUser(user), null, authorities);
+                    var authToken = new UsernamePasswordAuthenticationToken(
+                            new AuthUser(user),
+                            null,
+                            authorities
+                    );
 
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+
         } catch (JwtException | IllegalArgumentException e) {
             unauthorized(response, "Unauthorized: Invalid or expired token");
             return;
