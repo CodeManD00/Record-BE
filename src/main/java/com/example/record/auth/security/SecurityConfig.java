@@ -36,11 +36,15 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
 
+                        .requestMatchers("/STTorText/**").permitAll()
+
                         .requestMatchers("/ocr/**").permitAll()
                         .requestMatchers("/stt/**").permitAll()
                         .requestMatchers("/generate-image/**").permitAll()
                         .requestMatchers("/generate-image/with-file").permitAll()
                         .requestMatchers("/review-questions/**").permitAll()
+                        .requestMatchers("/reviews/**").permitAll()
+
 
 
 

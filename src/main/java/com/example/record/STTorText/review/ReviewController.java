@@ -17,18 +17,7 @@ public class ReviewController {
 
     private final ReviewServiceForBoth reviewService;
 
-    @PostMapping("/summarize")
-    public ResponseEntity<?> summarize(
-            @RequestBody ReviewRequest req,
-            @AuthenticationPrincipal AuthUser authUser
-    ) {
-        if (authUser == null) return ResponseEntity.status(401).build();
-        User user = authUser.getUser();
-
-        Transcription result = reviewService.summarize(req, user);
-        return ResponseEntity.ok(result);
-    }
-
+    /** 후기 정리 (말투 유지, 내용 그대로, 길이 유지) */
     @PostMapping("/organize")
     public ResponseEntity<?> organize(
             @RequestBody ReviewRequest req,
@@ -37,19 +26,18 @@ public class ReviewController {
         if (authUser == null) return ResponseEntity.status(401).build();
         User user = authUser.getUser();
 
-        Transcription result = reviewService.organize(req, user);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(reviewService.organize(req, user));
     }
 
-    @PostMapping("/finalize")
-    public ResponseEntity<?> finalizeReview(
-            @RequestBody FinalizeRequest req,
+    /** 후기 5줄 요약 */
+    @PostMapping("/summarize")
+    public ResponseEntity<?> summarize(
+            @RequestBody ReviewRequest req,
             @AuthenticationPrincipal AuthUser authUser
     ) {
         if (authUser == null) return ResponseEntity.status(401).build();
         User user = authUser.getUser();
 
-        Transcription result = reviewService.finalizeReview(req, user);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(reviewService.summarize(req, user));
     }
 }

@@ -1,4 +1,4 @@
-package com.example.record.application;
+package com.example.record;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

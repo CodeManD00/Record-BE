@@ -1,6 +1,6 @@
 // ApiKey: 사용자별 OpenAI API 키를 저장하는 엔티티 클래스입니다.
 
-package com.example.record.application;
+package com.example.record;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

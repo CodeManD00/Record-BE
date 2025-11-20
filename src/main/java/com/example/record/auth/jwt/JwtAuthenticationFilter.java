@@ -1,4 +1,3 @@
-
 package com.example.record.auth.jwt;
 
 import com.example.record.auth.security.AuthUser;
@@ -26,11 +25,38 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
 
+    /** ===== JWT 검사 제외 경로(SAFE LIST) ===== */
+    private static final String[] EXCLUDE_PATHS = {
+            "/auth",
+            "/reviews",
+            "/stt",
+            "/ocr",
+            "/generate-image",
+            "/STTorText",
+            "/review-questions"
+    };
+
+    private boolean isExcluded(String path) {
+        for (String prefix : EXCLUDE_PATHS) {
+            if (path.startsWith(prefix)) return true;
+        }
+        return false;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        /** ===== 1) 허용 경로면 JWT 검사하지 않고 바로 통과 ===== */
+        if (isExcluded(path)) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        /** ===== 2) 여기부터 JWT 검사 ===== */
         final String authHeader = request.getHeader("Authorization");
 
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
@@ -45,12 +71,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String role = jwtUtil.getRoleFromToken(token);
 
                 User user = userRepository.findById(id).orElse(null);
+
                 if (user != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
 
                     UsernamePasswordAuthenticationToken authentication =
                             new UsernamePasswordAuthenticationToken(new AuthUser(user), null, authorities);
+
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }

@@ -304,7 +304,8 @@ public class PromptService {
         }
 
         // 3단계: 후기 분석 (항상 수행 - DB 데이터가 있어도 보조 정보로 사용)
-        Map<String, Object> data = reviewAnalysisService.analyzeReview(input.getReview());
+        Map<String, Object> data = reviewAnalysisService.analyzeReview(input.getBasePrompt());
+
 
         // 4단계: 분기 처리
         // ============================================================

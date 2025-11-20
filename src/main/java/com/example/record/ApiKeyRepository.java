@@ -1,6 +1,6 @@
 // ApiKeyRepository: ApiKey 엔티티에 대한 DB 접근을 제공하는 JPA 리포지토리 인터페이스입니다.
 
-package com.example.record.application;
+package com.example.record;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

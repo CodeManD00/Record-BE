@@ -1,13 +1,5 @@
 package com.example.record.promptcontrol_w03.service;
-/*
-역할: OpenAI Chat Completions 호출 공통 유틸.
 
-핵심 기능
-WebClient로 /chat/completions 호출, timeout(30s) + 백오프 retry(2회), 에러 시 응답 바디 포함해 예외 래핑
-model, temperature, max_tokens(옵션), messages(system/user) 구성
-첫 choice의 message.content를 반환(비어있으면 예외)
-DTO: ChatRequest/Message/ChatResponse 내부 정적 클래스
- */
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -24,47 +16,51 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OpenAIChatService {
 
-    private final WebClient openAIWebClient;
+    private final WebClient openAiWebClient;
 
     @Value("${openai.url.chat}")
     private String chatUrl;
 
     @Value("${openai.model.chat}")
-    private String chatModel;
+    private String model;
 
     public String complete(String systemPrompt, String userPrompt) {
-        var req = new ChatRequest();
-        req.model = chatModel;
+        ChatRequest req = new ChatRequest();
+        req.model = model;
         req.temperature = 0.7;
+        req.max_tokens = 200;   // ★ 안전하게 제한
         req.messages = List.of(
-                new Message("system", systemPrompt),
-                new Message("user", userPrompt)
+                Message.text("system", systemPrompt),
+                Message.text("user", userPrompt)
         );
 
         try {
-            ChatResponse res = openAIWebClient.post()
+            ChatResponse res = openAiWebClient.post()
                     .uri(chatUrl)
                     .bodyValue(req)
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, r ->
                             r.bodyToMono(String.class)
-                                    .defaultIfEmpty("no body")
-                                    .map(body -> new RuntimeException("OpenAI chat error " + r.statusCode() + " :: " + body)))
+                                    .map(body -> new RuntimeException("OpenAI chat error: " + body))
+                    )
                     .bodyToMono(ChatResponse.class)
                     .timeout(Duration.ofSeconds(30))
                     .retryWhen(Retry.backoff(2, Duration.ofSeconds(1)))
                     .block();
 
-            if (res == null || res.choices == null || res.choices.isEmpty() || res.choices.get(0).message == null) {
-                throw new RuntimeException("OpenAI chat: empty response");
+            if (res == null || res.choices == null || res.choices.isEmpty()) {
+                throw new RuntimeException("Empty OpenAI response");
             }
-            return res.choices.get(0).message.content.trim();
+
+            return res.choices.get(0).message.content.get(0).text.trim();
+
         } catch (Exception e) {
             throw new RuntimeException("OpenAI chat call failed: " + e.getMessage(), e);
         }
     }
 
-    // ===== DTOs =====
+    // ==== 내부 DTO ====
+
     @Data
     static class ChatRequest {
         public String model;
@@ -77,16 +73,31 @@ public class OpenAIChatService {
     @Data
     static class Message {
         public String role;
-        public String content;
-        public Message(String role, String content) {
-            this.role = role;
-            this.content = content;
+        public List<Content> content;
+
+        public static Message text(String role, String text) {
+            Message m = new Message();
+            m.role = role;
+            m.content = List.of(new Content("text", text));
+            return m;
+        }
+
+        @Data
+        static class Content {
+            public String type;
+            public String text;
+
+            public Content(String type, String text) {
+                this.type = type;
+                this.text = text;
+            }
         }
     }
 
     @Data
     static class ChatResponse {
         public List<Choice> choices;
+
         @Data
         static class Choice {
             public Message message;

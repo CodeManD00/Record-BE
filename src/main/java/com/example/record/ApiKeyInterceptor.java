@@ -1,6 +1,6 @@
 // ApiKeyInterceptor: 모든 HTTP 요청에 대해 Authorization 헤더의 API 키 유효성을 검사하는 Spring 인터셉터입니다.
 
-package com.example.record.application;
+package com.example.record;
 
 import java.io.IOException;
 

@@ -1,9 +1,6 @@
 package com.example.record.STTorText.review;
 
-
-import com.example.record.STTorText.entity.Transcription;
-import com.example.record.STTorText.entity.TranscriptionRepository;
-import com.example.record.STTorText.gpt.GptService;
+import com.example.record.promptcontrol_w03.service.OpenAIChatService;
 import com.example.record.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,85 +10,61 @@ import org.springframework.util.StringUtils;
 @RequiredArgsConstructor
 public class ReviewServiceForBoth {
 
-    private final GptService gpt;
-    private final TranscriptionRepository repo;
+    private final OpenAIChatService openAI;
 
-    /** STT 기반 또는 텍스트 기반으로 자동 분기 */
-    private String resolveBaseText(ReviewRequest req, User user) {
-        if (req.transcriptionId() != null) {
-            Transcription t = repo.findById(req.transcriptionId())
-                    .filter(x -> x.getUser().equals(user))
-                    .orElseThrow(() -> new RuntimeException("Transcription not found"));
-
-            return StringUtils.hasText(req.text()) ? req.text() : t.getResultText();
+    /** =========================================
+     * ① 후기 정리 (말투 유지 / 길이 유지 / 자연스럽게 정돈)
+     * ========================================= */
+    public String organize(ReviewRequest req, User user) {
+        String input = req.text();
+        if (!StringUtils.hasText(input)) {
+            throw new IllegalArgumentException("review text is required");
         }
-        return req.text();
-    }
-
-    /** 5줄 요약 */
-    public Transcription summarize(ReviewRequest req, User user) {
-        String base = resolveBaseText(req, user);
 
         String prompt = """
-                아래 내용을 5줄 이내로 자연스럽게 요약해줘.
-                내용 누락 없이 핵심만 압축.
+                아래 공연 후기를 '말투와 분위기를 최대한 유지'하면서
+                자연스럽게 정돈된 한 문단으로 정리해줘.
+                - 핵심만 정리하되 내용은 크게 축약하지 말 것
+                - 말투, 감정선, 표현 분위기를 유지
+                - 너무 딱딱하지 않고 사용자 후기 느낌을 살릴 것
+                - 불필요한 반복/오타/비문만 자연스럽게 고치기
+                - 불릿포인트 금지
+                후기:
+                %s
+                """.formatted(input);
 
-                원문:
-                """ + base;
-
-        String summary = gpt.ask(prompt);
-
-        if (req.transcriptionId() == null) return null;
-
-        Transcription t = repo.findById(req.transcriptionId()).get();
-        t.setSummary(summary);
-        t.setSummaryType(ReviewType.SUMMARY);
-        return repo.save(t);
+        return openAI.complete(
+                "You rewrite Korean text naturally while keeping the user's tone.",
+                prompt
+        );
     }
 
-    /** 원문 정리 */
-    public Transcription organize(ReviewRequest req, User user) {
-        String base = resolveBaseText(req, user);
+    /** =========================================
+     * ② 영어 5줄 요약 (이미지 프롬프트 base)
+     * ========================================= */
+    public String summarize(ReviewRequest req, User user) {
+        String base = req.text();
+        if (!StringUtils.hasText(base)) {
+            throw new IllegalArgumentException("review text is required");
+        }
 
         String prompt = """
-                아래 글을 원문 길이를 유지한 채 더 읽기 좋게 정리해줘.
-                요약 금지, 삭제 금지.
+            Summarize the following Korean performance review into **3 to 5 full sentences in natural English**.
+            Requirements:
+            - Focus on core scenes, atmosphere, emotions, and spatial/mood elements.
+            - No bullet points or lists.
+            - No meta comments about the summary.
+            - Make it suitable as a base prompt for an image-generation model.
+            - Do NOT mention text, captions, or logos.
+            
+            Review:
+            %s
+            """.formatted(base);
 
-                원문:
-                """ + base;
-
-        String organized = gpt.ask(prompt);
-
-        if (req.transcriptionId() == null) return null;
-
-        Transcription t = repo.findById(req.transcriptionId()).get();
-        t.setSummary(organized);
-        t.setSummaryType(ReviewType.ORGANIZED);
-        return repo.save(t);
+        return openAI.complete(
+                "You translate and summarize Korean text into natural English suitable for image prompt usage.",
+                prompt
+        );
     }
 
-    /** 최종 후기 */
-    public Transcription finalizeReview(FinalizeRequest req, User user) {
-        Transcription t = repo.findById(req.transcriptionId())
-                .filter(x -> x.getUser().equals(user))
-                .orElseThrow(() -> new RuntimeException("Transcription not found"));
-
-        String base = StringUtils.hasText(t.getSummary()) ? t.getSummary() : t.getResultText();
-        if (StringUtils.hasText(req.extraNotes()))
-            base += "\n\n추가 메모: " + req.extraNotes();
-
-        String prompt = """
-                아래 내용을 블로그용 후기 글로 다듬어줘.
-                - 감정 유지
-                - 문장 구조 매끄럽게
-
-                원문:
-                """ + base;
-
-        String finalReview = gpt.ask(prompt);
-
-        t.setSummary(finalReview);
-        t.setSummaryType(ReviewType.FINAL);
-        return repo.save(t);
-    }
 }

@@ -1,4 +1,4 @@
-package com.example.record.application;
+package com.example.record;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
