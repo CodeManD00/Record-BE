@@ -21,8 +21,7 @@ public class Transcription {
     @Column(name = "file_name")
     private String fileName;
 
-    @Lob
-    @Column(name = "result_text", columnDefinition = "TEXT")
+    @Column(name = "result_text", columnDefinition = "TEXT", length = 65535)
     private String resultText;
 
     @Column(name = "created_at")

@@ -57,6 +57,10 @@ public class SttController {
 
             String transcript = whisperService.transcribe(bytes, filename, "ko");
 
+            System.out.println("=== 변환된 텍스트 ===");
+            System.out.println("텍스트 길이: " + (transcript != null ? transcript.length() : 0) + " 문자");
+            System.out.println("텍스트 내용 (처음 100자): " + (transcript != null && transcript.length() > 100 ? transcript.substring(0, 100) + "..." : transcript));
+
             Transcription t = Transcription.builder()
                     .user(user)
                     .fileName(file.getOriginalFilename())
@@ -66,7 +70,10 @@ public class SttController {
                     .createdAt(LocalDateTime.now())
                     .build();
 
-            repo.save(t);
+            Transcription saved = repo.save(t);
+            System.out.println("=== DB 저장 완료 ===");
+            System.out.println("저장된 ID: " + saved.getId());
+            System.out.println("저장된 resultText 길이: " + (saved.getResultText() != null ? saved.getResultText().length() : 0) + " 문자");
 
             return ResponseEntity.ok(t);
 
