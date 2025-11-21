@@ -52,6 +52,8 @@ app:
   upload:
     profile-image-dir: uploads/profile-images
     profile-image-url-prefix: /uploads/profile-images
+    generated-image-dir: uploads/generated-images
+    generated-image-url-prefix: /uploads/generated-images
 
 openai:
   api:
@@ -66,7 +68,7 @@ openai:
   model:
     transcription: whisper-1
     chat: gpt-4o-mini
-    image: gpt-image-1
+    image: dall-e-3
 
   limits:
     whisperMaxFileMB: ${OPENAI_WHISPER_MAX_MB:25}

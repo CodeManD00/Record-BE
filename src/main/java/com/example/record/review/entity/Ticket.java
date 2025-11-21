@@ -62,8 +62,8 @@ public class Ticket {
     @Column(name = "image_url", length = 400)
     private String imageUrl;
 
-    @Column(name = "ocr_text", columnDefinition = "TEXT")
-    private String ocrText;
+    @Column(name = "image_prompt", columnDefinition = "TEXT")
+    private String imagePrompt;
 
     @Column(name = "review_text", columnDefinition = "TEXT")
     private String reviewText;

@@ -20,6 +20,9 @@ public class PromptRequest {
     /** summarize() → 영어 5줄 요약 결과 */
     private String basePrompt;
 
+    /** 리뷰 ID (이미지를 리뷰와 연결하기 위해 필요) */
+    private Long reviewId;
+
     // ===== Getter =====
     public String getTitle() { return title; }
     public String getLocation() { return location; }
@@ -30,6 +33,7 @@ public class PromptRequest {
     public String getSize() { return size; }
     public int getN() { return n; }
     public String getBasePrompt() { return basePrompt; }
+    public Long getReviewId() { return reviewId; }
 
     // ===== Setter =====
     public void setTitle(String title) { this.title = title; }
@@ -41,4 +45,5 @@ public class PromptRequest {
     public void setSize(String size) { this.size = size; }
     public void setN(int n) { this.n = n; }
     public void setBasePrompt(String basePrompt) { this.basePrompt = basePrompt; }
+    public void setReviewId(Long reviewId) { this.reviewId = reviewId; }
 }

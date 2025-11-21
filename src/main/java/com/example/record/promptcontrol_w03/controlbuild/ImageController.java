@@ -23,7 +23,7 @@ public class ImageController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ImageResponse> generateJson(@RequestBody PromptRequest request) {
         return ResponseEntity.ok(
-                generateInternal(request.getBasePrompt(), request.getImageRequest())
+                generateInternal(request.getBasePrompt(), request.getImageRequest(), request.getReviewId())
         );
     }
 
@@ -34,12 +34,12 @@ public class ImageController {
             @RequestPart(value = "file", required = false) MultipartFile ignoredFile
     ) {
         return ResponseEntity.ok(
-                generateInternal(request.getBasePrompt(), request.getImageRequest())
+                generateInternal(request.getBasePrompt(), request.getImageRequest(), request.getReviewId())
         );
     }
 
     /** ★ 최종 이미지 생성 공통 처리 */
-    private ImageResponse generateInternal(String basePrompt, String imageRequest) {
+    private ImageResponse generateInternal(String basePrompt, String imageRequest, Long reviewId) {
 
         if (basePrompt == null || basePrompt.isBlank()) {
             return ImageResponse.error("basePrompt is required (English summary text).");
@@ -47,7 +47,14 @@ public class ImageController {
 
         String finalPrompt = buildPrompt(basePrompt, imageRequest);
 
-        String imageUrl = imageService.generateImage(finalPrompt);
+        // reviewId가 있으면 DB에 저장, 없으면 파일만 저장
+        String imageUrl;
+        if (reviewId != null) {
+            imageUrl = imageService.generateImage(finalPrompt, reviewId);
+        } else {
+            // reviewId 없이도 이미지 생성 가능 (테스트용)
+            imageUrl = imageService.generateImageWithoutReview(finalPrompt);
+        }
 
         ImageResponse res = new ImageResponse();
         res.setPrompt(finalPrompt);

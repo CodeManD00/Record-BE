@@ -13,15 +13,27 @@ public class WebConfig implements WebMvcConfigurer {
     @Value("${app.upload.profile-image-dir:uploads/profile-images}")
     private String profileImageDir;
 
+    @Value("${app.upload.generated-image-dir:uploads/generated-images}")
+    private String generatedImageDir;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String uploadPath = Paths.get(profileImageDir)
+        String profileImagePath = Paths.get(profileImageDir)
                 .toAbsolutePath()
                 .normalize()
                 .toUri()
                 .toString();   // 예: file:/Users/.../uploads/profile-images/
 
+        String generatedImagePath = Paths.get(generatedImageDir)
+                .toAbsolutePath()
+                .normalize()
+                .toUri()
+                .toString();   // 예: file:/Users/.../uploads/generated-images/
+
         registry.addResourceHandler("/uploads/profile-images/**")
-                .addResourceLocations(uploadPath);
+                .addResourceLocations(profileImagePath);
+
+        registry.addResourceHandler("/uploads/generated-images/**")
+                .addResourceLocations(generatedImagePath);
     }
 }
