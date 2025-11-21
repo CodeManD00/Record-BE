@@ -2,7 +2,6 @@ package com.example.record.user;
 
 import com.example.record.auth.security.AuthUser;
 import com.example.record.common.ApiResponse;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -96,7 +95,7 @@ public class UserController {
     // ────────────────────────────────
     @PatchMapping("/nickname")
     public ResponseEntity<ApiResponse<?>> updateNickname(
-            @Valid @RequestBody UpdateNicknameRequest req
+            @RequestBody UpdateNicknameRequest req
     ) {
         // 사용자 ID 유효성 검사
         if (req.getUserId() == null || req.getUserId().trim().isEmpty()) {
