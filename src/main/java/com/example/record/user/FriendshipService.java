@@ -97,7 +97,14 @@ public class FriendshipService {
 
         // 대기 중인 요청만 수락 가능
         if (!friendship.isPending()) {
-            throw new IllegalArgumentException("대기 중인 친구 요청만 수락할 수 있습니다.");
+            String currentStatus = friendship.getStatus();
+            if ("ACCEPTED".equals(currentStatus)) {
+                throw new IllegalArgumentException("이미 수락된 친구 요청입니다.");
+            } else if ("REJECTED".equals(currentStatus)) {
+                throw new IllegalArgumentException("이미 거절된 친구 요청입니다.");
+            } else {
+                throw new IllegalArgumentException("대기 중인 친구 요청만 수락할 수 있습니다. (현재 상태: " + currentStatus + ")");
+            }
         }
 
         // 친구 요청 수락
@@ -178,7 +185,7 @@ public class FriendshipService {
      * 특정 사용자가 받은 친구 요청 목록을 조회합니다.
      * 
      * @param userId 사용자 ID
-     * @return 해당 사용자가 받은 친구 요청 목록
+     * @return 해당 사용자가 받은 친구 요청 목록 (PENDING 상태만)
      */
     @Transactional(readOnly = true)
     public List<Friendship> getReceivedFriendRequests(String userId) {
@@ -188,7 +195,10 @@ public class FriendshipService {
             f.getUser().getId();  // user 로드
             f.getFriend().getId();  // friend 로드
         });
-        return friendships;
+        // PENDING 상태인 요청만 반환 (이미 수락/거절된 요청은 제외)
+        return friendships.stream()
+                .filter(Friendship::isPending)
+                .toList();
     }
 
     /**

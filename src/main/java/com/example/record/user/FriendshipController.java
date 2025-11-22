@@ -111,15 +111,37 @@ public class FriendshipController {
     /**
      * 친구 목록을 조회합니다.
      * 
+     * 현재 사용자와 친구인 사람들의 정보만 반환합니다.
+     * 
      * @param userId 사용자 ID
-     * @return 친구 목록
+     * @return 친구 목록 (현재 사용자 제외, 친구 정보만 포함)
      */
     @GetMapping("/{userId}/friends")
     public ResponseEntity<?> getFriends(@PathVariable String userId) {
         try {
             List<Friendship> friends = friendshipService.getFriends(userId);
             List<FriendshipResponse> responses = friends.stream()
-                    .map(FriendshipResponse::from)
+                    .map(friendship -> {
+                        // 현재 사용자가 아닌 친구의 정보만 포함하도록 변환
+                        FriendshipResponse response = FriendshipResponse.from(friendship);
+                        // 현재 사용자가 user인 경우 friend 정보를, friend인 경우 user 정보를 사용
+                        if (friendship.getUser().getId().equals(userId)) {
+                            // 현재 사용자가 요청을 보낸 경우 -> friend가 친구
+                            response.setUserId(friendship.getFriend().getId());
+                            response.setUserNickname(friendship.getFriend().getNickname());
+                            response.setUserProfileImage(friendship.getFriend().getProfileImage());
+                            response.setFriendId(null);
+                            response.setFriendNickname(null);
+                            response.setFriendProfileImage(null);
+                        } else {
+                            // 현재 사용자가 요청을 받은 경우 -> user가 친구
+                            response.setFriendId(null);
+                            response.setFriendNickname(null);
+                            response.setFriendProfileImage(null);
+                            // userId, userNickname, userProfileImage는 이미 친구 정보로 설정됨
+                        }
+                        return response;
+                    })
                     .collect(Collectors.toList());
             return ResponseEntity.ok(responses);
         } catch (Exception e) {
