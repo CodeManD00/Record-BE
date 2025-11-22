@@ -119,7 +119,7 @@ public class FriendshipService {
      * 이 메서드는 왜 필요한가요?
      * 1. 권한 확인: 요청을 받은 사용자만 거절할 수 있음
      * 2. 상태 확인: 대기 중인 요청만 거절 가능
-     * 3. 명확한 거절: 거절 상태로 명확히 표시
+     * 3. 데이터 정리: 거절 시 DB에서 완전히 삭제하여 불필요한 데이터 제거
      * 
      * @param requesterId 요청을 거절하는 사용자 ID
      * @param friendshipId 친구 관계 ID
@@ -141,9 +141,8 @@ public class FriendshipService {
             throw new IllegalArgumentException("대기 중인 친구 요청만 거절할 수 있습니다.");
         }
 
-        // 친구 요청 거절
-        friendship.reject();
-        friendshipRepository.save(friendship);
+        // 친구 요청 거절 시 DB에서 완전히 삭제
+        friendshipRepository.delete(friendship);
         return true;
     }
 
@@ -168,7 +167,7 @@ public class FriendshipService {
      * 특정 사용자가 보낸 친구 요청 목록을 조회합니다.
      * 
      * @param userId 사용자 ID
-     * @return 해당 사용자가 보낸 친구 요청 목록
+     * @return 해당 사용자가 보낸 친구 요청 목록 (PENDING 상태만)
      */
     @Transactional(readOnly = true)
     public List<Friendship> getSentFriendRequests(String userId) {
@@ -178,7 +177,10 @@ public class FriendshipService {
             f.getUser().getId();  // user 로드
             f.getFriend().getId();  // friend 로드
         });
-        return friendships;
+        // PENDING 상태인 요청만 반환 (이미 수락/거절된 요청은 제외)
+        return friendships.stream()
+                .filter(Friendship::isPending)
+                .toList();
     }
 
     /**
