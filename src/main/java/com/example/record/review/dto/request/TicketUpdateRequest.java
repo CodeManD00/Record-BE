@@ -8,10 +8,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TicketCreateRequest {
-    private String userId;
+public class TicketUpdateRequest {
     private String performanceTitle;
-    private String venue;  // 공연장 (theater에서 변경)
+    private String venue;  // 공연장
     private String seat;  // 좌석
     private String artist;  // 아티스트
     private String posterUrl;

@@ -21,6 +21,7 @@ public class UserController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
+    private final FriendshipService friendshipService;
 
     // ────────────────────────────────
     // Request DTO
@@ -162,7 +163,56 @@ public class UserController {
     }
 
     // ────────────────────────────────
-    // 5. 회원탈퇴
+    // 5. 사용자 ID로 검색 (친구 검색용)
+    // ────────────────────────────────
+    @GetMapping("/search/{userId}")
+    public ResponseEntity<ApiResponse<?>> searchUser(
+            @PathVariable String userId,
+            @RequestHeader(value = "X-User-Id", required = false) String searcherId) {
+        try {
+            // 검색 대상 사용자 조회
+            User user = userRepository.findById(userId.trim())
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // 비공개 계정이고 본인이 아니면 검색 불가
+            if (user.getIsAccountPrivate() != null && user.getIsAccountPrivate()) {
+                if (searcherId == null || !searcherId.equals(userId)) {
+                    return ResponseEntity.ok(
+                            new ApiResponse<>(false, null, "비공개 계정입니다.")
+                    );
+                }
+            }
+
+            // 친구 관계 상태 확인 (검색자가 있는 경우)
+            String friendshipStatus = null;
+            if (searcherId != null && !searcherId.equals(userId)) {
+                var friendship = friendshipService.getFriendship(searcherId, userId);
+                if (friendship.isPresent()) {
+                    friendshipStatus = friendship.get().getStatus();
+                }
+            }
+
+            // 응답 생성
+            UserSearchResponse response = new UserSearchResponse(
+                    user.getId(),
+                    user.getNickname(),
+                    user.getProfileImage(),
+                    user.getIsAccountPrivate(),
+                    friendshipStatus
+            );
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, response, "사용자 검색 성공")
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok(
+                    new ApiResponse<>(false, null, e.getMessage())
+            );
+        }
+    }
+
+    // ────────────────────────────────
+    // 6. 회원탈퇴
     // ────────────────────────────────
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<?>> deleteAccount(
@@ -217,4 +267,15 @@ public class UserController {
             );
         }
     }
+
+    // ────────────────────────────────
+    // Response DTO - 사용자 검색
+    // ────────────────────────────────
+    public record UserSearchResponse(
+            String id,
+            String nickname,
+            String profileImage,
+            Boolean isAccountPrivate,
+            String friendshipStatus  // PENDING, ACCEPTED, REJECTED, null (친구 관계 없음)
+    ) {}
 }

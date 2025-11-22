@@ -269,7 +269,7 @@ public class TestDataInitController {
             Ticket musicalTicket = Ticket.builder()
                     .user(testUser)
                     .performanceTitle("오페라의 유령")
-                    .theater("세종문화회관 대극장")
+                    .venue("세종문화회관 대극장")
                     .genre("MUSICAL")
                     .viewDate(LocalDate.of(2025, 10, 15))
                     .imageUrl("https://example.com/musical-ticket.jpg")  // 테스트용 더미 이미지 URL
@@ -280,7 +280,7 @@ public class TestDataInitController {
             Ticket bandTicket = Ticket.builder()
                     .user(testUser)
                     .performanceTitle("콜드플레이 내한공연")
-                    .theater("올림픽공원 KSPO DOME")
+                    .venue("올림픽공원 KSPO DOME")
                     .genre("BAND")
                     .viewDate(LocalDate.of(2025, 10, 20))
                     .imageUrl("https://example.com/band-ticket.jpg")  // 테스트용 더미 이미지 URL

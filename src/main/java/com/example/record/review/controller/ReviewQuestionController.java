@@ -32,6 +32,7 @@ public class ReviewQuestionController {
      * 사용자에게 표시할 질문들을 가져옵니다.
      *
      * @param user  현재 인증된 사용자 (JWT 토큰에서 자동으로 주입됨)
+     * @param xUserId X-User-Id 헤더에서 추출한 사용자 ID (JWT 토큰이 없을 때 사용)
      * @param genre 장르 (예: "밴드", "연극/뮤지컬", "뮤지컬")
      * @return 질문 텍스트 목록
      * <p>
@@ -39,18 +40,24 @@ public class ReviewQuestionController {
      * - 성공: { "success": true, "data": ["질문1", "질문2", "질문3"], "message": "질문 조회 성공" }
      * - 실패: { "success": false, "data": null, "message": "에러 메시지" }
      * <p>
-     * 왜 @AuthenticationPrincipal을 사용하나요?
-     * 1. 보안: JWT 토큰에서 사용자 정보를 안전하게 추출합니다.
-     * 2. 편의성: 수동으로 토큰을 파싱할 필요가 없습니다.
-     * 3. 일관성: 다른 컨트롤러들과 동일한 방식으로 사용자 정보를 가져옵니다.
+     * 사용자 ID 추출 우선순위:
+     * 1. JWT 토큰에서 추출한 사용자 ID (가장 우선)
+     * 2. X-User-Id 헤더에서 추출한 사용자 ID
+     * 3. 둘 다 없으면 null (기본 질문 제공)
      */
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getQuestions(
             @AuthenticationPrincipal User user,
+            @RequestHeader(value = "X-User-Id", required = false) String xUserId,
             @RequestParam String genre) {
         try {
-            // ★ 로그인하지 않아도 허용
-            String userId = (user != null) ? user.getId() : null;
+            // ★ 사용자 ID 추출: JWT 우선, 없으면 X-User-Id 헤더 사용
+            String userId = null;
+            if (user != null) {
+                userId = user.getId();
+            } else if (xUserId != null && !xUserId.trim().isEmpty()) {
+                userId = xUserId.trim();
+            }
 
             // userId가 null이면 ReviewQuestionService에서 기본 질문 제공
             List<String> questions = reviewQuestionService.getQuestionsForUser(userId, genre);

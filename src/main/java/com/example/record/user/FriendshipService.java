@@ -146,8 +146,15 @@ public class FriendshipService {
      * @param userId 사용자 ID
      * @return 해당 사용자의 친구 목록
      */
+    @Transactional(readOnly = true)
     public List<Friendship> getFriends(String userId) {
-        return friendshipRepository.findByUser_IdAndStatusOrFriend_IdAndStatus(userId, "ACCEPTED", userId, "ACCEPTED");
+        List<Friendship> friendships = friendshipRepository.findByUser_IdAndStatusOrFriend_IdAndStatus(userId, "ACCEPTED", userId, "ACCEPTED");
+        // LAZY 로딩을 트랜잭션 내에서 강제로 로드
+        friendships.forEach(f -> {
+            f.getUser().getId();  // user 로드
+            f.getFriend().getId();  // friend 로드
+        });
+        return friendships;
     }
 
     /**
@@ -156,8 +163,15 @@ public class FriendshipService {
      * @param userId 사용자 ID
      * @return 해당 사용자가 보낸 친구 요청 목록
      */
+    @Transactional(readOnly = true)
     public List<Friendship> getSentFriendRequests(String userId) {
-        return friendshipRepository.findByUser_Id(userId);
+        List<Friendship> friendships = friendshipRepository.findByUser_Id(userId);
+        // LAZY 로딩을 트랜잭션 내에서 강제로 로드
+        friendships.forEach(f -> {
+            f.getUser().getId();  // user 로드
+            f.getFriend().getId();  // friend 로드
+        });
+        return friendships;
     }
 
     /**
@@ -166,8 +180,15 @@ public class FriendshipService {
      * @param userId 사용자 ID
      * @return 해당 사용자가 받은 친구 요청 목록
      */
+    @Transactional(readOnly = true)
     public List<Friendship> getReceivedFriendRequests(String userId) {
-        return friendshipRepository.findByFriend_Id(userId);
+        List<Friendship> friendships = friendshipRepository.findByFriend_Id(userId);
+        // LAZY 로딩을 트랜잭션 내에서 강제로 로드
+        friendships.forEach(f -> {
+            f.getUser().getId();  // user 로드
+            f.getFriend().getId();  // friend 로드
+        });
+        return friendships;
     }
 
     /**

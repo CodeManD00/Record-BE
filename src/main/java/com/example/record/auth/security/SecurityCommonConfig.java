@@ -22,9 +22,11 @@ public class SecurityCommonConfig {
     @Bean
     public AuthenticationEntryPoint authEntryPoint() {
         return (request, response, e) -> {
+            String path = request.getRequestURI();
+            System.out.println("🚫 AuthenticationEntryPoint 호출됨 - 경로: " + path + ", 예외: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+            response.getWriter().write("{\"success\":false,\"data\":null,\"message\":\"로그인이 필요합니다.\"}");
         };
     }
 

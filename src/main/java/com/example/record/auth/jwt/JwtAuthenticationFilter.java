@@ -49,9 +49,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        System.out.println("🔍 JwtAuthenticationFilter - 요청 경로: " + path);
 
         /** 1) JWT 필요 없는 경로는 필터 통과 */
         if (isExcluded(path)) {
+            System.out.println("✅ JWT 검사 제외 경로: " + path);
             chain.doFilter(request, response);
             return;
         }

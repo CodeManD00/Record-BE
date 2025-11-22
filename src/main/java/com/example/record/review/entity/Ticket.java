@@ -47,8 +47,14 @@ public class Ticket {
     @Column(name = "performance_title", nullable = false, length = 100)
     private String performanceTitle;
 
-    @Column(name = "theater", length = 100)
-    private String theater;
+    @Column(name = "venue", length = 100)
+    private String venue;  // 공연장 (theater에서 변경)
+
+    @Column(name = "seat", length = 50)
+    private String seat;  // 좌석
+
+    @Column(name = "artist", length = 100)
+    private String artist;  // 아티스트
 
     @Column(name = "poster_url", length = 400)
     private String posterUrl;

@@ -1,11 +1,13 @@
 package com.example.record.user;
 
+import com.example.record.user.dto.FriendshipResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 친구 관계 컨트롤러
@@ -116,7 +118,10 @@ public class FriendshipController {
     public ResponseEntity<?> getFriends(@PathVariable String userId) {
         try {
             List<Friendship> friends = friendshipService.getFriends(userId);
-            return ResponseEntity.ok(friends);
+            List<FriendshipResponse> responses = friends.stream()
+                    .map(FriendshipResponse::from)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("서버 오류가 발생했습니다.");
         }
@@ -132,7 +137,10 @@ public class FriendshipController {
     public ResponseEntity<?> getSentFriendRequests(@PathVariable String userId) {
         try {
             List<Friendship> sentRequests = friendshipService.getSentFriendRequests(userId);
-            return ResponseEntity.ok(sentRequests);
+            List<FriendshipResponse> responses = sentRequests.stream()
+                    .map(FriendshipResponse::from)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("서버 오류가 발생했습니다.");
         }
@@ -148,7 +156,10 @@ public class FriendshipController {
     public ResponseEntity<?> getReceivedFriendRequests(@PathVariable String userId) {
         try {
             List<Friendship> receivedRequests = friendshipService.getReceivedFriendRequests(userId);
-            return ResponseEntity.ok(receivedRequests);
+            List<FriendshipResponse> responses = receivedRequests.stream()
+                    .map(FriendshipResponse::from)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("서버 오류가 발생했습니다.");
         }
