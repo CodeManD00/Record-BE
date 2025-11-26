@@ -111,7 +111,13 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
       // 이미지 URL 처리 (상대 경로인 경우 첫 번째 이미지만 사용)
       let imageUrl: string | null = null;
       if (images && images.length > 0) {
-        const firstImage = images[0];
+        let firstImage = images[0];
+        
+        // 쿼리 파라미터 제거 (DB에 저장할 때는 순수 경로만 저장)
+        if (firstImage.includes('?')) {
+          firstImage = firstImage.split('?')[0];
+        }
+        
         // 절대 URL인 경우 상대 경로로 변환 필요할 수 있음
         // 백엔드에 저장된 경로인 경우 그대로 사용
         if (firstImage.startsWith('http://localhost:8080')) {

@@ -35,6 +35,13 @@ public class TicketService {
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: id=" + request.getUserId()));
 
+        // 이미지 URL에서 쿼리 파라미터 제거 (DB에는 순수 경로만 저장)
+        String cleanImageUrl = request.getImageUrl();
+        if (cleanImageUrl != null && cleanImageUrl.contains("?")) {
+            cleanImageUrl = cleanImageUrl.split("\\?")[0];
+            log.info("이미지 URL 쿼리 파라미터 제거: {} -> {}", request.getImageUrl(), cleanImageUrl);
+        }
+
         // 티켓 생성
         Ticket ticket = Ticket.builder()
                 .user(user)
@@ -45,7 +52,7 @@ public class TicketService {
                 .posterUrl(request.getPosterUrl())
                 .genre(request.getGenre())
                 .viewDate(request.getViewDate())
-                .imageUrl(request.getImageUrl())  // 이미지 URL 저장
+                .imageUrl(cleanImageUrl)  // 쿼리 파라미터가 제거된 이미지 URL 저장
                 .imagePrompt(request.getImagePrompt())  // 이미지 프롬프트 저장
                 .reviewText(request.getReviewText())
                 .isPublic(request.getIsPublic() != null ? request.getIsPublic() : false)
@@ -117,7 +124,13 @@ public class TicketService {
             ticket.setViewDate(request.getViewDate());
         }
         if (request.getImageUrl() != null) {
-            ticket.setImageUrl(request.getImageUrl());
+            // 이미지 URL에서 쿼리 파라미터 제거 (DB에는 순수 경로만 저장)
+            String cleanImageUrl = request.getImageUrl();
+            if (cleanImageUrl.contains("?")) {
+                cleanImageUrl = cleanImageUrl.split("\\?")[0];
+                log.info("이미지 URL 쿼리 파라미터 제거: {} -> {}", request.getImageUrl(), cleanImageUrl);
+            }
+            ticket.setImageUrl(cleanImageUrl);
         }
         if (request.getImagePrompt() != null) {
             ticket.setImagePrompt(request.getImagePrompt());

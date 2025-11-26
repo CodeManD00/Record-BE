@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
@@ -267,8 +266,9 @@ public class ImageService {
             ImageIO.write(croppedImage, "png", baos);
             byte[] croppedBytes = baos.toByteArray();
 
-            // 5. 파일 저장
-            Path uploadDir = Paths.get(generatedImageDir).toAbsolutePath().normalize();
+            // 5. 파일 저장 (Record-BE 폴더 기준)
+            Path baseDir = com.example.record.config.PathUtils.getRecordBEDir();
+            Path uploadDir = baseDir.resolve(generatedImageDir).normalize();
             Files.createDirectories(uploadDir);
 
             String filename = "cropped_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID() + ".png";

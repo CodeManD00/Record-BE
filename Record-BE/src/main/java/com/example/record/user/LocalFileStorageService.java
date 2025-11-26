@@ -7,7 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -37,8 +36,8 @@ public class LocalFileStorageService {
 
     public String saveProfileImage(String userId, MultipartFile file) {
         try {
-            // 디렉토리 생성
-            Path uploadDir = Paths.get(profileImageDir).toAbsolutePath().normalize();
+            Path baseDir = com.example.record.config.PathUtils.getRecordBEDir();
+            Path uploadDir = baseDir.resolve(profileImageDir).normalize();
             Files.createDirectories(uploadDir);
 
             // 파일 확장자 추출

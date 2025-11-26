@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -18,22 +18,30 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String profileImagePath = Paths.get(profileImageDir)
-                .toAbsolutePath()
-                .normalize()
-                .toUri()
-                .toString();   // 예: file:/Users/.../uploads/profile-images/
+        Path baseDir = PathUtils.getRecordBEDir();
+        
+        // 절대 경로 가져오기
+        Path profileImageAbsolutePath = baseDir.resolve(profileImageDir).normalize();
+        Path generatedImageAbsolutePath = baseDir.resolve(generatedImageDir).normalize();
+        
+        // file: URI 형식으로 변환 (끝에 / 필수)
+        String profileImagePath = profileImageAbsolutePath.toUri().toString();
+        if (!profileImagePath.endsWith("/")) {
+            profileImagePath += "/";
+        }
+        
+        String generatedImagePath = generatedImageAbsolutePath.toUri().toString();
+        if (!generatedImagePath.endsWith("/")) {
+            generatedImagePath += "/";
+        }
 
-        String generatedImagePath = Paths.get(generatedImageDir)
-                .toAbsolutePath()
-                .normalize()
-                .toUri()
-                .toString();   // 예: file:/Users/.../uploads/generated-images/
-
+        // ResourceHandler 등록
         registry.addResourceHandler("/uploads/profile-images/**")
-                .addResourceLocations(profileImagePath);
+                .addResourceLocations(profileImagePath)
+                .setCachePeriod(3600);
 
         registry.addResourceHandler("/uploads/generated-images/**")
-                .addResourceLocations(generatedImagePath);
+                .addResourceLocations(generatedImagePath)
+                .setCachePeriod(3600);
     }
 }

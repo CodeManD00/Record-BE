@@ -59,7 +59,7 @@ public class TicketController {
      */
     @PatchMapping("/{ticketId}")
     public ResponseEntity<Void> updateTicket(
-            @PathVariable Long ticketId,
+            @PathVariable("ticketId") Long ticketId,
             @RequestHeader("X-User-Id") String requesterUserId,
             @RequestBody TicketUpdateRequest request) {
         ticketService.updateTicket(ticketId, requesterUserId, request);
@@ -77,7 +77,7 @@ public class TicketController {
      */
     @DeleteMapping("/{ticketId}")
     public ResponseEntity<Void> deleteTicket(
-            @PathVariable Long ticketId,
+            @PathVariable("ticketId") Long ticketId,
             @RequestHeader("X-User-Id") String requesterUserId) {
         ticketService.deleteTicket(ticketId, requesterUserId);
         return ResponseEntity.noContent().build();
