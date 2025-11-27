@@ -10,12 +10,13 @@ import {
   Dimensions,
   StatusBar,
   Alert,
-  Share,
   Animated,
   TouchableWithoutFeedback,
   TextInput,
   Platform,
 } from 'react-native';
+import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ticket, UpdateTicketData } from '../types/ticket';
 import { useAtom } from 'jotai';
@@ -172,13 +173,31 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   // 티켓 공유 handle 함수
   const handleShare = async () => {
     try {
-      await Share.share({
-        message: `${ticket.title}\n ${ticket.artist}\n ${
-          ticket.venue || ''
-        }\n ${ticket.performedAt.toLocaleDateString('ko-KR')}`,
-        title: `${ticket.title} 티켓`,
+      const imageUrl = ticket.images?.[0];
+      
+      if (!imageUrl) {
+        Alert.alert('이미지 없음', '티켓 이미지가 없습니다.');
+        return;
+      }
+
+      // 1. 이미지 다운로드 후 base64 변환
+      const imagePath = `${RNFS.CachesDirectoryPath}/ticket_${ticket.id}.jpg`;
+      await RNFS.downloadFile({
+        fromUrl: imageUrl,
+        toFile: imagePath,
+      }).promise;
+
+      const base64Image = await RNFS.readFile(imagePath, 'base64');
+
+      // 2. 공유
+      await Share.open({
+        title: ticket.title,
+        message: `${ticket.title}`,
+        url: `data:image/jpeg;base64,${base64Image}`,
+        failOnCancel: false,
       });
-    } catch {
+    } catch (error) {
+      console.log('share error', error);
       Alert.alert('공유 실패', '티켓을 공유할 수 없습니다.');
     }
   };
@@ -532,7 +551,9 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     )}
                   </View>
                 </>
-              ) : null}
+              ) : (
+                <View />
+              )}
             </View>
           </View>
 

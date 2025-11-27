@@ -121,13 +121,14 @@ export const fetchMyTicketsAtom = atom(
           
           return {
             id: String(ticket.id || ''),
-            userId: ticket.userId || userId,
+            user_id: ticket.userId || userId, // Ticket 타입에 필수
+            userId: ticket.userId || userId, // 하위 호환성
             title: ticket.performanceTitle || ticket.title || '',
             artist: ticket.artist || '', // 백엔드에서 artist 필드 받기
             venue: ticket.theater || ticket.venue || '',
             seat: ticket.seat || '', // 백엔드에서 seat 필드 받기
             performedAt: performedAt,
-            genre: genre,
+            genre: genre || '', // Ticket 타입에 string 필수
             status: ticket.isPublic ? TicketStatus.PUBLIC : TicketStatus.PRIVATE,
             images: images,
             review: ticket.reviewText ? {
@@ -179,26 +180,21 @@ export const fetchFriendTicketsAtom = atom(
 
     // 로딩 상태는 전체 맵에 대해 설정하지 않고 개별적으로 처리
     try {
-      console.log('🔍 친구 티켓 조회 시작:', friendId);
+      // 백엔드가 공개 티켓만 반환하므로 필터링 불필요
       const result = await ticketService.getFriendTickets(friendId, 0, 100);
-      console.log('📥 친구 티켓 API 응답:', result);
       
       if (result.success && result.data) {
-        // 백엔드가 배열로 직접 반환하므로 result.data가 배열임
-        const tickets = Array.isArray(result.data) ? result.data : [];
-        console.log('✅ 친구 티켓 변환 전:', tickets.length, '개');
+        // 백엔드 응답 형식: 배열로 직접 반환 (공개 티켓만)
+        const ticketsList = Array.isArray(result.data) ? result.data : [];
         
-        // 티켓 변환 (백엔드 응답을 프론트엔드 형식으로) - 내 티켓 변환 로직과 동일
-        const convertedTickets = tickets.map((ticket: any) => {
-          const performedAt = ticket.viewDate 
-            ? new Date(ticket.viewDate + 'T00:00:00')
-            : ticket.performedAt 
-            ? new Date(ticket.performedAt)
-            : new Date();
+        // 백엔드 응답을 Ticket 형식으로 변환 (내 티켓 조회와 동일한 로직)
+        const convertedTickets: Ticket[] = ticketsList.map((ticket: any) => {
+          // viewDate를 Date로 변환
+          const performedAt = ticket.viewDate ? new Date(ticket.viewDate) : new Date();
           
-          // 장르 변환
-          let genre = ticket.genre || '';
-          if (genre && typeof genre === 'string') {
+          // genre를 백엔드 형식에서 프론트엔드 형식으로 변환
+          let genre: string | null = null;
+          if (ticket.genre) {
             const genreMap: Record<string, string> = {
               'BAND': '밴드',
               'MUSICAL': '연극/뮤지컬',
@@ -222,15 +218,18 @@ export const fetchFriendTicketsAtom = atom(
             }
           }
           
+          const userId = ticket.userId || friendId;
+          
           return {
             id: String(ticket.id || ''),
-            userId: ticket.userId || friendId,
+            user_id: userId, // Ticket 타입에 필수
+            userId: userId, // 하위 호환성
             title: ticket.performanceTitle || ticket.title || '',
             artist: ticket.artist || '',
-            venue: ticket.venue || '',
+            venue: ticket.theater || ticket.venue || '',
             seat: ticket.seat || '',
             performedAt: performedAt,
-            genre: genre,
+            genre: genre || '', // Ticket 타입에 string 필수
             status: ticket.isPublic ? TicketStatus.PUBLIC : TicketStatus.PRIVATE,
             images: images,
             review: ticket.reviewText ? {
@@ -242,8 +241,6 @@ export const fetchFriendTicketsAtom = atom(
             bookingSite: '',
           };
         });
-        
-        console.log('✅ 친구 티켓 변환 후:', convertedTickets.length, '개');
         
         const newMap = new Map(currentMap);
         newMap.set(friendId, convertedTickets);

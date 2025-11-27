@@ -33,6 +33,8 @@
 	<string>The microphone is needed for voice recording features.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to update your profile image.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>사진 공유를 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
 	<key>NSDocumentsFolderUsageDescription</key>
 	<string>This app needs access to your documents to select audio files.</string>
 	<key>RCTNewArchEnabled</key>
