@@ -76,7 +76,7 @@ public class Ticket {
 
     @Column(name = "is_public")
     @Builder.Default
-    private Boolean isPublic = false;
+    private Boolean isPublic = true;
 
     /**
      * 티켓 생성 시간
