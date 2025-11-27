@@ -31,6 +31,7 @@ const TicketGrid: React.FC<TicketGridProps> = ({
   const defaultCardWidth = (width - 10) / 3; // 3 columns with padding (20px * 2 + 20px gaps)
   const cardWidth = customCardWidth || defaultCardWidth;
   const cardHeight = cardWidth * cardAspectRatio;
+  
   const renderTicketCard = ({ item }: { item: Ticket }) => {
     const hasImages = item.images && item.images.length > 0;
     
@@ -42,6 +43,7 @@ const TicketGrid: React.FC<TicketGridProps> = ({
           !hasImages && styles.ticketCardNoImage
         ]}
         onPress={() => onTicketPress(item)}
+        activeOpacity={0.9}
       >
         {hasImages ? (
           <Image source={{ uri: item.images![0] }} style={styles.ticketImage} />

@@ -180,8 +180,12 @@ export const fetchFriendTicketsAtom = atom(
 
     // 로딩 상태는 전체 맵에 대해 설정하지 않고 개별적으로 처리
     try {
+      // 현재 사용자 ID 가져오기 (좋아요 상태 확인용)
+      const userProfile = get(userProfileAtom);
+      const currentUserId = userProfile?.id;
+      
       // 백엔드가 공개 티켓만 반환하므로 필터링 불필요
-      const result = await ticketService.getFriendTickets(friendId, 0, 100);
+      const result = await ticketService.getFriendTickets(friendId, currentUserId, 0, 100);
       
       if (result.success && result.data) {
         // 백엔드 응답 형식: 배열로 직접 반환 (공개 티켓만)

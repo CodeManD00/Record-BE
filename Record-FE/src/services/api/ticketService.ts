@@ -145,13 +145,16 @@ class TicketService {
   /**
    * 5) 친구 티켓 목록 조회
    * GET /api/tickets/user/{friendId}
+   * Header: X-User-Id (현재 사용자 ID, 좋아요 상태 확인용)
    */
   async getFriendTickets(
     friendId: string,
+    currentUserId?: string,
     page: number = 0,
     size: number = 20
   ): Promise<Result<any[]>> {
-    return apiClient.get<any[]>(`/api/tickets/user/${friendId}`);
+    const headers = currentUserId ? { 'X-User-Id': currentUserId } : undefined;
+    return apiClient.get<any[]>(`/api/tickets/user/${friendId}`, headers);
   }
 
   /**
@@ -231,6 +234,61 @@ class TicketService {
   ): Promise<Result<any>> {
     const params = year ? `?year=${year}` : '';
     return apiClient.get<any>(`/api/tickets/user/${userId}/year-in-review${params}`);
+  }
+
+  /**
+   * 11) 좋아요 추가/취소 (토글)
+   * POST /api/tickets/{ticketId}/like
+   * Header: X-User-Id
+   */
+  async toggleLike(
+    ticketId: string | number,
+    userId: string
+  ): Promise<Result<{ isLiked: boolean; likeCount: number }>> {
+    const numericTicketId = typeof ticketId === 'string' ? parseInt(ticketId, 10) : ticketId;
+    if (isNaN(numericTicketId)) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_TICKET_ID',
+          message: '티켓 ID가 유효하지 않습니다.',
+        },
+      };
+    }
+    return apiClient.post<{ isLiked: boolean; likeCount: number }>(
+      `/api/tickets/${numericTicketId}/like`,
+      {},
+      {
+        headers: { 'X-User-Id': userId },
+      }
+    );
+  }
+
+  /**
+   * 12) 좋아요한 사용자 목록 조회 (티켓 소유자만)
+   * GET /api/tickets/{ticketId}/likes
+   * Header: X-User-Id
+   */
+  async getLikedUsers(
+    ticketId: string | number,
+    userId: string
+  ): Promise<Result<{ likedUserIds: string[] }>> {
+    const numericTicketId = typeof ticketId === 'string' ? parseInt(ticketId, 10) : ticketId;
+    if (isNaN(numericTicketId)) {
+      return {
+        success: false,
+        error: {
+          code: 'INVALID_TICKET_ID',
+          message: '티켓 ID가 유효하지 않습니다.',
+        },
+      };
+    }
+    return apiClient.get<{ likedUserIds: string[] }>(
+      `/api/tickets/${numericTicketId}/likes`,
+      {
+        headers: { 'X-User-Id': userId },
+      }
+    );
   }
 
 }

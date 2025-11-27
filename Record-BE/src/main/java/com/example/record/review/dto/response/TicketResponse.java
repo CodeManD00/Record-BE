@@ -29,6 +29,8 @@ public class TicketResponse {
     private Boolean isPublic;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean isLiked;  // 현재 사용자가 좋아요를 눌렀는지 여부
+    private Long likeCount;   // 좋아요 개수
 
     public static TicketResponse from(Ticket ticket) {
         return TicketResponse.builder()
@@ -47,6 +49,30 @@ public class TicketResponse {
                 .isPublic(ticket.getIsPublic())
                 .createdAt(ticket.getCreatedAt())
                 .updatedAt(ticket.getUpdatedAt())
+                .isLiked(false)  // 기본값, 서비스에서 설정
+                .likeCount(0L)    // 기본값, 서비스에서 설정
+                .build();
+    }
+
+    public static TicketResponse from(Ticket ticket, Boolean isLiked, Long likeCount) {
+        return TicketResponse.builder()
+                .id(ticket.getId())
+                .userId(ticket.getUser().getId())
+                .performanceTitle(ticket.getPerformanceTitle())
+                .venue(ticket.getVenue())
+                .seat(ticket.getSeat())
+                .artist(ticket.getArtist())
+                .posterUrl(ticket.getPosterUrl())
+                .genre(ticket.getGenre())
+                .viewDate(ticket.getViewDate())
+                .imageUrl(ticket.getImageUrl())
+                .imagePrompt(ticket.getImagePrompt())
+                .reviewText(ticket.getReviewText())
+                .isPublic(ticket.getIsPublic())
+                .createdAt(ticket.getCreatedAt())
+                .updatedAt(ticket.getUpdatedAt())
+                .isLiked(isLiked)
+                .likeCount(likeCount)
                 .build();
     }
 }

@@ -46,9 +46,10 @@ public class TicketController {
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TicketResponse>> getTicketsByUserId(
-            @PathVariable("userId") String userId) {
-        System.out.println("🔍 GET /api/tickets/user/" + userId + " 요청 받음");
-        List<TicketResponse> tickets = ticketService.getPublicTicketsByUserId(userId);
+            @PathVariable("userId") String userId,
+            @RequestHeader(value = "X-User-Id", required = false) String currentUserId) {
+        System.out.println("🔍 GET /api/tickets/user/" + userId + " 요청 받음, currentUserId=" + currentUserId);
+        List<TicketResponse> tickets = ticketService.getPublicTicketsByUserId(userId, currentUserId);
         System.out.println("✅ 공개 티켓 반환: " + tickets.size() + "개");
         return ResponseEntity.ok(tickets);
     }

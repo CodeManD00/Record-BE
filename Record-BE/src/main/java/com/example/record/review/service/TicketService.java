@@ -6,6 +6,7 @@ import com.example.record.review.dto.request.TicketUpdateRequest;
 import com.example.record.review.dto.response.*;
 import com.example.record.review.entity.Ticket;
 import com.example.record.review.repository.TicketRepository;
+import com.example.record.review.repository.TicketLikeRepository;
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
+    private final TicketLikeRepository ticketLikeRepository;
 
     /**
      * 티켓 생성
@@ -93,14 +95,19 @@ public class TicketService {
      * @return 해당 사용자의 공개 티켓 목록
      */
     @Transactional(readOnly = true)
-    public List<TicketResponse> getPublicTicketsByUserId(String userId) {
-        log.info("🔍 공개 티켓 조회 시작: userId={}", userId);
+    public List<TicketResponse> getPublicTicketsByUserId(String userId, String currentUserId) {
+        log.info("🔍 공개 티켓 조회 시작: userId={}, currentUserId={}", userId, currentUserId);
         List<Ticket> tickets = ticketRepository.findPublicTicketsByUserId(userId);
         log.info("✅ 공개 티켓 조회 완료: userId={}, count={}", userId, tickets.size());
         // LAZY 로딩을 트랜잭션 내에서 강제로 로드
         tickets.forEach(t -> t.getUser().getId());
         return tickets.stream()
-                .map(TicketResponse::from)
+                .map(ticket -> {
+                    boolean isLiked = currentUserId != null && 
+                        ticketLikeRepository.findByTicket_IdAndUser_Id(ticket.getId(), currentUserId).isPresent();
+                    long likeCount = ticketLikeRepository.countByTicket_Id(ticket.getId());
+                    return TicketResponse.from(ticket, isLiked, likeCount);
+                })
                 .collect(Collectors.toList());
     }
 

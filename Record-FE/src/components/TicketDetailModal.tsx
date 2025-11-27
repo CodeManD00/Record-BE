@@ -66,6 +66,16 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [showGenreModal, setShowGenreModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [isDetailsExpanded, setIsDetailsExpanded] = useState(true);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [likedUserIds, setLikedUserIds] = useState<string[]>([]);
+  const [localTicket, setLocalTicket] = useState<Ticket | null>(ticket);
+  const heartScale = useRef(new Animated.Value(1)).current;
+  const heartColor = useRef(new Animated.Value(0)).current;
+  const [showParticles, setShowParticles] = useState(false);
+  const particleAnimations = useRef<Animated.Value[]>([]).current;
+  const rippleAnim1 = useRef(new Animated.Value(0)).current;
+  const rippleAnim2 = useRef(new Animated.Value(0)).current;
+  const rippleAnim3 = useRef(new Animated.Value(0)).current;
 
   const genreOptions = [
     { label: '밴드', value: '밴드' },
@@ -120,11 +130,20 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const hintOpacity = useRef(new Animated.Value(1)).current;
   const detailsAnimation = useRef(new Animated.Value(1)).current;
 
+  // 티켓이 변경되면 localTicket 업데이트
+  useEffect(() => {
+    if (ticket) {
+      setLocalTicket(ticket);
+    }
+  }, [ticket]);
+
   // 티켓이 없거나 ID가 없으면 조기 반환
   if (!ticket || !ticket.id) {
     console.warn('⚠️ TicketDetailModal: 티켓 또는 티켓 ID가 없습니다', { ticket, propTicket });
     return null;
   }
+
+  const currentTicket = localTicket || ticket;
 
   const getStatusColor = (status: TicketStatus) =>
     status === TicketStatus.PUBLIC ? '#d7fffcff' : '#FF6B6B';
@@ -415,6 +434,141 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
     setShowDropdown(false);
   };
 
+  // 좋아요 리스트 조회
+  const handleShowLikes = async () => {
+    if (!ticket || !ticket.id || !userProfile?.id) {
+      return;
+    }
+    setShowDropdown(false);
+    
+    try {
+      const result = await ticketService.getLikedUsers(ticket.id, userProfile.id);
+      if (result.success && result.data) {
+        setLikedUserIds(result.data.likedUserIds);
+        setShowLikesModal(true);
+      } else {
+        Alert.alert('오류', result.error?.message || '좋아요 리스트를 불러올 수 없습니다.');
+      }
+    } catch (error) {
+      console.error('좋아요 리스트 조회 중 오류:', error);
+      Alert.alert('오류', '좋아요 리스트를 불러오는 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 파티클 애니메이션 생성
+  const createParticleAnimations = () => {
+    const particles: Animated.Value[] = [];
+    for (let i = 0; i < 8; i++) {
+      particles.push(new Animated.Value(0));
+    }
+    particleAnimations.length = 0;
+    particleAnimations.push(...particles);
+    return particles;
+  };
+
+  // 좋아요 토글
+  const handleLikePress = async () => {
+    if (!currentTicket || !currentTicket.id || !userProfile?.id) {
+      return;
+    }
+
+    try {
+      const result = await ticketService.toggleLike(currentTicket.id, userProfile.id);
+      if (result.success && result.data) {
+        const newIsLiked = result.data.isLiked;
+        
+        // 좋아요를 누를 때만 파티클 효과 표시
+        if (newIsLiked) {
+          const particles = createParticleAnimations();
+          setShowParticles(true);
+          
+          // 파동 효과 리셋 및 시작
+          rippleAnim1.setValue(0);
+          rippleAnim2.setValue(0);
+          rippleAnim3.setValue(0);
+          
+          Animated.parallel([
+            Animated.timing(rippleAnim1, {
+              toValue: 1,
+              duration: 600,
+              useNativeDriver: false,
+            }),
+            Animated.timing(rippleAnim2, {
+              toValue: 1,
+              duration: 600,
+              delay: 100,
+              useNativeDriver: false,
+            }),
+            Animated.timing(rippleAnim3, {
+              toValue: 1,
+              duration: 600,
+              delay: 200,
+              useNativeDriver: false,
+            }),
+          ]).start();
+          
+          // 파티클 애니메이션 시작
+          const particleAnims = particles.map((anim, index) => {
+            return Animated.timing(anim, {
+              toValue: 1,
+              duration: 600,
+              useNativeDriver: false,
+            });
+          });
+          
+          Animated.parallel(particleAnims).start(() => {
+            setTimeout(() => {
+              setShowParticles(false);
+              particles.forEach(p => p.setValue(0));
+            }, 100);
+          });
+        }
+        
+        // 애니메이션: 하트 크기 변화와 색상 변화를 동시에
+        Animated.parallel([
+          Animated.sequence([
+            Animated.spring(heartScale, {
+              toValue: 1.4,
+              useNativeDriver: false,
+              tension: 200,
+              friction: 4,
+            }),
+            Animated.spring(heartScale, {
+              toValue: 1,
+              useNativeDriver: false,
+              tension: 200,
+              friction: 4,
+            }),
+          ]),
+          Animated.timing(heartColor, {
+            toValue: newIsLiked ? 1 : 0,
+            duration: 300,
+            useNativeDriver: false,
+          }),
+        ]).start();
+
+        setLocalTicket({
+          ...currentTicket,
+          isLiked: newIsLiked,
+          likeCount: result.data.likeCount,
+        });
+      }
+    } catch (error) {
+      console.error('좋아요 처리 중 오류:', error);
+    }
+  };
+
+  // 티켓이 변경되거나 좋아요 상태가 변경되면 애니메이션 값 업데이트
+  useEffect(() => {
+    if (currentTicket) {
+      Animated.timing(heartColor, {
+        toValue: currentTicket.isLiked ? 1 : 0,
+        duration: 0,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [currentTicket?.isLiked]);
+
   const frontInterpolate = flipAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
@@ -540,6 +694,14 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                           </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleShowLikes}
+                        >
+                          <Text style={styles.dropdownText}>
+                            좋아요 보기
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                           style={[
                             styles.dropdownItem,
                           ]}
@@ -603,7 +765,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                       <Image
                         source={{
                           uri:
-                            ticket.images?.[0] ||
+                            currentTicket.images?.[0] ||
                             'https://via.placeholder.com/400x500?text=No+Image',
                         }}
                         style={styles.posterImage}
@@ -694,9 +856,162 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     textAlign="center"
                   />
                 ) : (
-                  <Text style={[styles.title]}>{ticket.title}</Text>
+                  <Text style={[styles.title]}>{currentTicket.title}</Text>
                 )}
               </View>
+
+              {/* 좋아요 하트 */}
+              {!isEditing && (
+                <View style={styles.likeSection}>
+                  <View style={styles.likeButtonWrapper}>
+                    {/* 파티클 효과 */}
+                    {showParticles && particleAnimations.length > 0 && (
+                      <>
+                        {particleAnimations.map((anim, index) => {
+                          const angle = (index * 360) / particleAnimations.length;
+                          const radians = (angle * Math.PI) / 180;
+                          const distance = 50;
+                          const endX = Math.cos(radians) * distance;
+                          const endY = Math.sin(radians) * distance;
+                          
+                          const translateX = anim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, endX],
+                          });
+                          
+                          const translateY = anim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, endY],
+                          });
+                          
+                          const opacity = anim.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: [1, 0.8, 0],
+                          });
+                          
+                          const scale = anim.interpolate({
+                            inputRange: [0, 0.5, 1],
+                            outputRange: [0.5, 0.8, 0.3],
+                          });
+                          
+                          return (
+                            <Animated.View
+                              key={`particle-${index}`}
+                              style={[
+                                styles.particle,
+                                {
+                                  transform: [
+                                    { translateX },
+                                    { translateY },
+                                    { scale },
+                                  ],
+                                  opacity,
+                                },
+                              ]}
+                            >
+                              <Text style={styles.particleHeart}>♥</Text>
+                            </Animated.View>
+                          );
+                        })}
+                      </>
+                    )}
+                    
+                    {/* 파동 효과 */}
+                    {showParticles && (
+                      <>
+                        <Animated.View
+                          style={[
+                            styles.ripple,
+                            {
+                              transform: [{
+                                scale: rippleAnim1.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [1, 2.5],
+                                }),
+                              }],
+                              opacity: rippleAnim1.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: [0.4, 0.2, 0],
+                              }),
+                            },
+                          ]}
+                        />
+                        <Animated.View
+                          style={[
+                            styles.ripple,
+                            {
+                              transform: [{
+                                scale: rippleAnim2.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [1, 2.5],
+                                }),
+                              }],
+                              opacity: rippleAnim2.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: [0.4, 0.2, 0],
+                              }),
+                            },
+                          ]}
+                        />
+                        <Animated.View
+                          style={[
+                            styles.ripple,
+                            {
+                              transform: [{
+                                scale: rippleAnim3.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [1, 2.5],
+                                }),
+                              }],
+                              opacity: rippleAnim3.interpolate({
+                                inputRange: [0, 0.5, 1],
+                                outputRange: [0.4, 0.2, 0],
+                              }),
+                            },
+                          ]}
+                        />
+                      </>
+                    )}
+                    
+                    <TouchableOpacity
+                      style={styles.detailLikeButton}
+                      onPress={handleLikePress}
+                      activeOpacity={0.7}
+                    >
+                      <Animated.View
+                        style={[
+                          styles.detailHeartContainer,
+                          {
+                            transform: [{ scale: heartScale }],
+                            backgroundColor: heartColor.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [Colors.white, Colors.primary],
+                            }),
+                            borderColor: heartColor.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [Colors.black, Colors.primary],
+                            }),
+                          },
+                        ]}
+                      >
+                        <Animated.Text
+                          style={[
+                            styles.detailHeartIcon,
+                            {
+                              color: heartColor.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [Colors.black, Colors.white],
+                              }),
+                            },
+                          ]}
+                        >
+                          ♥
+                        </Animated.Text>
+                      </Animated.View>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
             </View>
 
             <View style={styles.detailsSection}>
@@ -925,6 +1240,45 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {/* 좋아요 리스트 모달 */}
+      <Modal
+        visible={showLikesModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowLikesModal(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setShowLikesModal(false)}>
+          <View style={styles.likesModalOverlay}>
+            <TouchableWithoutFeedback>
+              <View style={styles.likesModalContent}>
+                <View style={styles.likesModalHeader}>
+                  <Text style={styles.likesModalTitle}>좋아요</Text>
+                  <TouchableOpacity
+                    style={styles.likesModalCloseButton}
+                    onPress={() => setShowLikesModal(false)}
+                  >
+                    <Text style={styles.likesModalCloseText}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.likesModalList}>
+                  {likedUserIds.length > 0 ? (
+                    likedUserIds.map((userId, index) => (
+                      <View key={userId} style={styles.likesModalItem}>
+                        <Text style={styles.likesModalUserId}>@{userId}</Text>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.likesModalEmpty}>
+                      <Text style={styles.likesModalEmptyText}>아직 좋아요가 없습니다</Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </Modal>
   );
 };
@@ -1013,6 +1367,63 @@ const styles = StyleSheet.create({
   },
   flipCardBack: { backgroundColor: Colors.systemBackground },
   posterImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  
+  // 좋아요 섹션
+  likeSection: {
+    alignItems: 'center',
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xs,
+  },
+  likeButtonWrapper: {
+    position: 'relative',
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailLikeButton: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  detailHeartContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.white,
+    borderWidth: 1.5,
+    borderColor: Colors.black,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  detailHeartIcon: {
+    fontSize: 16,
+    lineHeight: 18,
+  },
+  // 파티클 효과
+  particle: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  particleHeart: {
+    fontSize: 14,
+    color: Colors.primary,
+  },
+  // 파동 효과
+  ripple: {
+    position: 'absolute',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    backgroundColor: 'transparent',
+  },
 
   // 탭 하여 후기보기
   tapHint: {
@@ -1294,6 +1705,68 @@ const styles = StyleSheet.create({
   genreOptionTextSelected: {
     color: Colors.white,
     fontWeight: '600',
+  },
+
+  // 좋아요 리스트 모달 스타일
+  likesModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  likesModalContent: {
+    backgroundColor: Colors.systemBackground,
+    borderRadius: BorderRadius.xl,
+    width: width * 0.8,
+    maxWidth: 400,
+    maxHeight: '70%',
+    ...Shadows.large,
+  },
+  likesModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.systemGray5,
+  },
+  likesModalTitle: {
+    ...Typography.headline,
+    color: Colors.label,
+    fontWeight: '600',
+  },
+  likesModalCloseButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.secondarySystemBackground,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  likesModalCloseText: {
+    ...Typography.title3,
+    color: Colors.label,
+  },
+  likesModalList: {
+    maxHeight: 400,
+  },
+  likesModalItem: {
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.systemGray5,
+  },
+  likesModalUserId: {
+    ...Typography.body,
+    color: Colors.label,
+  },
+  likesModalEmpty: {
+    padding: Spacing.xl,
+    alignItems: 'center',
+  },
+  likesModalEmptyText: {
+    ...Typography.callout,
+    color: Colors.secondaryLabel,
   },
 });
 
