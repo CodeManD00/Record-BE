@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -47,6 +47,9 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   const [, setBasePrompt] = useAtom(basePromptAtom);
   const [userProfile] = useAtom(userProfileAtom);
   const [basePrompt] = useAtom(basePromptAtom);
+  
+  // 중복 실행 방지를 위한 ref
+  const hasSavedRef = useRef(false);
 
   /** 표시될 이미지 선택 */
   const ticketImage =
@@ -62,6 +65,12 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
   console.log('최종 표시할 이미지:', ticketImage);
 
   useEffect(() => {
+    // 이미 저장했으면 실행하지 않음
+    if (hasSavedRef.current) {
+      console.log('⚠️ 이미 저장 완료된 티켓입니다. 중복 저장 방지.');
+      return;
+    }
+    
     if (!ticketData) {
       console.warn('ticketData가 없습니다!');
       return;
@@ -149,18 +158,23 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
       console.log('📤 백엔드 API 요청 데이터:', JSON.stringify(requestData, null, 2));
 
       try {
+        // 중복 실행 방지: 저장 시작 표시
+        hasSavedRef.current = true;
+        
         // 백엔드 API 호출
         const result = await ticketService.createTicket(requestData);
 
         if (!result.success) {
           console.error('❌ 티켓 저장 실패:', result.error);
           Alert.alert('저장 실패', result.error?.message || '티켓 저장에 실패했습니다.');
+          // 실패 시 ref 초기화하여 재시도 가능하게
+          hasSavedRef.current = false;
           return;
         }
 
         console.log('✅ 티켓 저장 성공:', result.data);
         
-        // 로컬 atom에도 저장 (UI 업데이트용)
+        // 로컬 atom에도 저장 (UI 업데이트용) - 백엔드 저장 성공 후에만
         const ticketReview =
           reviewData?.reviewText || reviewData?.text
             ? {
@@ -191,6 +205,8 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
       } catch (error) {
         console.error('❌ 티켓 저장 중 오류:', error);
         Alert.alert('저장 실패', '티켓 저장 중 오류가 발생했습니다.');
+        // 에러 시 ref 초기화하여 재시도 가능하게
+        hasSavedRef.current = false;
       }
     };
 
@@ -205,7 +221,8 @@ const TicketCompletePage: React.FC<TicketCompletePageProps> = ({ navigation, rou
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [navigation, ticketData, reviewData, images, userProfile, basePrompt, addTicket, setBasePrompt]);
+    // basePrompt를 dependency에서 제거하여 basePrompt 변경 시 재실행 방지
+  }, [navigation, ticketData, reviewData, images, userProfile, addTicket, setBasePrompt]);
 
   const handleBackPress = () => {
     navigation.reset({

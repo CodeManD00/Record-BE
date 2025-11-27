@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Colors, Typography, Spacing, BorderRadius } from '../styles/designSystem';
 import GNB from './GNB';
 
@@ -8,6 +9,8 @@ interface CalendarHeaderProps {
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({ monthlyTicketCount }) => {
+  const navigation = useNavigation();
+
   return (
     <>
       {/* Header */}
@@ -16,8 +19,16 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ monthlyTicketCount }) =
       {/* Calendar Title and Count */}
       <View style={styles.titleSection}>
         <Text style={styles.calendarTitle}>캘린더</Text>
-        <View style={styles.ticketCountBadge}>
-          <Text style={styles.ticketCountText}>🎟️  {monthlyTicketCount}개</Text>
+        <View style={styles.rightSection}>
+          <TouchableOpacity
+            style={styles.archiveButton}
+            onPress={() => navigation.navigate('PerformanceArchive' as never)}
+          >
+            <Text style={styles.archiveButtonText}>아카이브</Text>
+          </TouchableOpacity>
+          <View style={styles.ticketCountBadge}>
+            <Text style={styles.ticketCountText}>🎟️  {monthlyTicketCount}개</Text>
+          </View>
         </View>
       </View>
     </>
@@ -39,7 +50,24 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.label,
   },
-
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  archiveButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    justifyContent: 'center',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 0.5,
+    borderColor: Colors.systemGray5,
+  },
+  archiveButtonText: {
+    ...Typography.subheadline,
+    color: Colors.label,
+    fontWeight: '600',
+  },
   // Ticket count
   ticketCountBadge: {
     flexDirection: 'row',

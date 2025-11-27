@@ -15,7 +15,7 @@ spring:
             enable: true
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/recorddb}
+    url: ${DB_URL:jdbc:postgresql://record-db.czsw4i6quunb.ap-northeast-2.rds.amazonaws.com:5432/recorddb}
     username: ${DB_USER:recorduser}
     password: ${DB_PASSWORD:recordpass}
     driver-class-name: org.postgresql.Driver

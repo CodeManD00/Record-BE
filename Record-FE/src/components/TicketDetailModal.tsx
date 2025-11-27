@@ -27,6 +27,8 @@ import {
   ticketsAtom,
 } from '../atoms';
 import { deleteTicketAtom, updateTicketAtom, myTicketsAtom } from '../atoms/ticketsAtomsApi';
+import { userProfileAtom } from '../atoms/userAtomsApi';
+import { ticketService } from '../services/api/ticketService';
 import { TicketDetailModalProps } from '../types/componentProps';
 import PrivacySelectionModal from './PrivacySelectionModal';
 import {
@@ -50,6 +52,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const [getTicketById] = useAtom(getTicketByIdAtom);
   const [localTickets] = useAtom(ticketsAtom);
   const [apiTickets] = useAtom(myTicketsAtom);
+  const [userProfile] = useAtom(userProfileAtom);
 
   const ticket = propTicket ? getTicketById(propTicket.id) || propTicket : null;
   const [isFlipped, setIsFlipped] = useState(false);
@@ -101,6 +104,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
   const handleCardTap = () => {
     if (isEditing) return;
     if (currentScale < 0.99) return; // 축소 상태에서는 뒤집기 막기
+    
     setIsFlipped(!isFlipped);
   };
 
@@ -124,6 +128,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
 
   const getStatusColor = (status: TicketStatus) =>
     status === TicketStatus.PUBLIC ? '#d7fffcff' : '#FF6B6B';
+
 
   // 카드 자동 회전 (isEditing 또는 isFlipped 상태에 따라 자동 뒤집힘/복귀)
   useEffect(() => {
@@ -1002,7 +1007,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: Colors.systemBackground,
   },
-  flipCardFront: { backgroundColor: Colors.systemBackground },
+  flipCardFront: { 
+    backgroundColor: Colors.systemBackground,
+    position: 'relative',
+  },
   flipCardBack: { backgroundColor: Colors.systemBackground },
   posterImage: { width: '100%', height: '100%', resizeMode: 'cover' },
 

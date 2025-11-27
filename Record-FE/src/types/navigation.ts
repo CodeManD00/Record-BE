@@ -19,7 +19,7 @@ export type RootStackParamList = {
   TicketComplete: { ticketData: TicketData; reviewData: ReviewData };
   Settings: undefined;
   PersonalInfoEdit: undefined;
-  History: undefined;
+  PerformanceArchive: undefined;
   FriendsList: undefined;
   AddFriend: undefined;
   SentRequests: undefined;

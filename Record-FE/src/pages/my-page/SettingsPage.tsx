@@ -182,13 +182,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ navigation }) => {
       showArrow: true,
     },
     {
-      id: 2,
-      title: '히스토리',
-      icon: '📋',
-      onPress: () => navigation.navigate('History'),
-      showArrow: true,
-    },
-    {
       id: 3,
       title: '로그아웃',
       icon: '🚪',

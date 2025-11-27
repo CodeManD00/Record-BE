@@ -11,7 +11,6 @@ import com.example.record.review.repository.TicketRepository;
 import com.example.record.review.repository.UserCustomQuestionRepository;
 import com.example.record.user.User;
 import com.example.record.user.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,7 +38,6 @@ public class ReviewQuestionService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final OpenAIChatService openAIChatService;
-    private final ObjectMapper objectMapper;
 
     /**
      * 사용자에게 표시할 질문들을 가져옵니다.

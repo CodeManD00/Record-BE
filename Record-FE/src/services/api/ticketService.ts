@@ -188,6 +188,51 @@ class TicketService {
       formData
     );
   }
+
+  /**
+   * 8) 고급 검색
+   * POST /api/tickets/user/{userId}/search
+   */
+  async searchTickets(
+    userId: string,
+    searchParams: {
+      startDate?: string;
+      endDate?: string;
+      genre?: string;
+      venue?: string;
+      artist?: string;
+      performanceTitle?: string;
+      sortBy?: string;
+      sortDirection?: string;
+    }
+  ): Promise<Result<any[]>> {
+    return apiClient.post<any[]>(`/api/tickets/user/${userId}/search`, searchParams);
+  }
+
+  /**
+   * 9) 티켓 통계 분석
+   * GET /api/tickets/user/{userId}/statistics?year=2024
+   */
+  async getTicketStatistics(
+    userId: string,
+    year?: number
+  ): Promise<Result<any>> {
+    const params = year ? `?year=${year}` : '';
+    return apiClient.get<any>(`/api/tickets/user/${userId}/statistics${params}`);
+  }
+
+  /**
+   * 10) 연말 결산
+   * GET /api/tickets/user/{userId}/year-in-review?year=2024
+   */
+  async getYearInReview(
+    userId: string,
+    year?: number
+  ): Promise<Result<any>> {
+    const params = year ? `?year=${year}` : '';
+    return apiClient.get<any>(`/api/tickets/user/${userId}/year-in-review${params}`);
+  }
+
 }
 
 export const ticketService = new TicketService();

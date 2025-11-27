@@ -39,7 +39,7 @@ import SentRequestsPage from './src/pages/my-page/SentRequestsPage';
 import AddFriendPage from './src/pages/my-page/AddFriendPage';
 import SettingsPage from './src/pages/my-page/SettingsPage';
 import PersonalInfoEditPage from './src/pages/my-page/PersonalInfoEditPage';
-import HistoryPage from './src/pages/my-page/HistoryPage';
+import PerformanceArchivePage from './src/pages/archive/PerformanceArchivePage';
 
 // Components
 import FriendProfilePage from './src/components/FriendProfilePage';
@@ -285,8 +285,8 @@ function App(): React.JSX.Element {
           }}
         />
         <Stack.Screen
-          name="History"
-          component={HistoryPage}
+          name="PerformanceArchive"
+          component={PerformanceArchivePage}
           options={{
             presentation: 'modal',
           }}

@@ -1,9 +1,12 @@
 package com.example.record.review.controller;
 
 import com.example.record.review.dto.request.TicketCreateRequest;
+import com.example.record.review.dto.request.TicketSearchRequest;
 import com.example.record.review.dto.request.TicketUpdateRequest;
 import com.example.record.review.dto.response.TicketCreateResponse;
 import com.example.record.review.dto.response.TicketResponse;
+import com.example.record.review.dto.response.TicketStatisticsResponse;
+import com.example.record.review.dto.response.YearInReviewResponse;
 import com.example.record.review.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -85,5 +88,51 @@ public class TicketController {
         ticketService.deleteTicket(ticketId, requesterUserId);
         return ResponseEntity.noContent().build();
     }
+
+    /**
+     * 고급 검색: 조건에 맞는 티켓 목록 조회
+     * 
+     * @param userId 사용자 ID
+     * @param request 검색 조건
+     * @return 검색된 티켓 목록
+     */
+    @PostMapping("/user/{userId}/search")
+    public ResponseEntity<List<TicketResponse>> searchTickets(
+            @PathVariable("userId") String userId,
+            @RequestBody TicketSearchRequest request) {
+        List<TicketResponse> tickets = ticketService.searchTickets(userId, request);
+        return ResponseEntity.ok(tickets);
+    }
+
+    /**
+     * 티켓 통계 분석
+     * 
+     * @param userId 사용자 ID
+     * @param year 분석할 연도 (기본값: 현재 연도)
+     * @return 통계 분석 결과
+     */
+    @GetMapping("/user/{userId}/statistics")
+    public ResponseEntity<TicketStatisticsResponse> getTicketStatistics(
+            @PathVariable("userId") String userId,
+            @RequestParam(value = "year", required = false) Integer year) {
+        TicketStatisticsResponse statistics = ticketService.getTicketStatistics(userId, year);
+        return ResponseEntity.ok(statistics);
+    }
+
+    /**
+     * 연말 결산 (Year-in-Review)
+     * 
+     * @param userId 사용자 ID
+     * @param year 분석할 연도 (기본값: 현재 연도)
+     * @return 연말 결산 리포트
+     */
+    @GetMapping("/user/{userId}/year-in-review")
+    public ResponseEntity<YearInReviewResponse> getYearInReview(
+            @PathVariable("userId") String userId,
+            @RequestParam(value = "year", required = false) Integer year) {
+        YearInReviewResponse review = ticketService.getYearInReview(userId, year);
+        return ResponseEntity.ok(review);
+    }
+
 }
 
