@@ -33,17 +33,20 @@ public class TicketController {
     }
 
     /**
-     * 사용자의 티켓 목록 조회
+     * 사용자의 티켓 목록 조회 (공개 티켓만 반환)
      * 
-     * 시뮬레이터를 껐다가 켰을 때 DB에서 사용자의 티켓을 가져옵니다.
+     * 친구 프로필에서 조회할 때 사용됩니다.
+     * 공개 설정된 티켓만 반환하여 비공개 티켓을 보호합니다.
      * 
      * @param userId 사용자 ID
-     * @return 해당 사용자의 티켓 목록 (생성 시간 내림차순)
+     * @return 해당 사용자의 공개 티켓 목록 (생성 시간 내림차순)
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<TicketResponse>> getTicketsByUserId(
             @PathVariable("userId") String userId) {
-        List<TicketResponse> tickets = ticketService.getTicketsByUserId(userId);
+        System.out.println("🔍 GET /api/tickets/user/" + userId + " 요청 받음");
+        List<TicketResponse> tickets = ticketService.getPublicTicketsByUserId(userId);
+        System.out.println("✅ 공개 티켓 반환: " + tickets.size() + "개");
         return ResponseEntity.ok(tickets);
     }
 

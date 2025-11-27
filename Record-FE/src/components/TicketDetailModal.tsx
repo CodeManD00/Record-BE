@@ -532,14 +532,7 @@ const TicketDetailModal: React.FC<TicketDetailModalProps> = ({
                     )}
                   </View>
                 </>
-              ) : (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={handleShare}
-                >
-                  <Text style={styles.actionButtonText}>↗</Text>
-                </TouchableOpacity>
-              )}
+              ) : null}
             </View>
           </View>
 

@@ -89,6 +89,7 @@ const styles = StyleSheet.create({
   gridContent: {
     paddingHorizontal: 2,
     paddingBottom: Spacing.sectionSpacing,
+    alignItems: 'flex-start',
   },
   gridRow: {
     justifyContent: 'flex-start',

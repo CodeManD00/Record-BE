@@ -21,6 +21,7 @@ import { FriendProfileScreenProps } from '../types/navigation';
 import { useAtom } from 'jotai';
 import { fetchFriendTicketsAtom, friendTicketsMapAtom } from '../atoms/ticketsAtomsApi';
 import { isPlaceholderTicket } from '../utils/isPlaceholder';
+import { resolveImageUrl } from '../utils/resolveImageUrl';
 import { Colors, Typography, Spacing, BorderRadius, Shadows } from '../styles/designSystem';
 
 const { width } = Dimensions.get('window');
@@ -59,15 +60,29 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
     [friendTickets],
   );
 
-  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+  const formatDate = (date: Date | string) => {
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toISOString().split('T')[0];
+  };
 
   const selectedEvents = useMemo(
     () =>
       realFriendTickets.filter(
-        ticket => formatDate(new Date(ticket.performedAt)) === selectedDate,
+        ticket => {
+          const ticketDate = formatDate(ticket.performedAt);
+          return ticketDate === selectedDate;
+        },
       ),
     [realFriendTickets, selectedDate],
   );
+  
+  // 디버그 로그
+  useEffect(() => {
+    console.log('🔍 FriendProfilePage - friendTickets:', friendTickets.length);
+    console.log('🔍 FriendProfilePage - realFriendTickets:', realFriendTickets.length);
+    console.log('🔍 FriendProfilePage - friendTickets 데이터:', friendTickets);
+    console.log('🔍 FriendProfilePage - realFriendTickets 데이터:', realFriendTickets);
+  }, [friendTickets, realFriendTickets]);
 
   const handleTicketPress = (ticket: Ticket) => {
     setSelectedTicket(ticket);
@@ -102,20 +117,23 @@ const FriendProfilePage: React.FC<FriendProfileScreenProps> = ({ navigation, rou
         >
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{friend.name}</Text>
+        <Text style={styles.headerTitle}>{friend.nickname || friend.user_id}</Text>
         <View style={styles.placeholder} />
       </View>
 
       {/* 프로필 + 탭 + PagerView */}
       <View style={styles.mainContent}>
         <View style={styles.profileSection}>
-          <Image source={{ uri: friend.avatar }} style={styles.profileAvatar} />
+          <Image 
+            source={{ uri: resolveImageUrl(friend.profileImage) || undefined }} 
+            style={styles.profileAvatar} 
+          />
           <View style={styles.badgeWrapper}>
             <Text style={styles.badgeEmoji}>🎟️</Text>
             <Text style={styles.badgeText}>{realFriendTickets.length}</Text>
           </View>
-          <Text style={styles.profileName}>{friend.name}</Text>
-          <Text style={styles.profileUsername}>{friend.username}</Text>
+          <Text style={styles.profileName}>{friend.nickname || '닉네임 없음'}</Text>
+          <Text style={styles.profileUsername}>@{friend.user_id || friend.id}</Text>
         </View>
 
         {/* 탭 */}
@@ -355,7 +373,7 @@ const styles = StyleSheet.create({
   feedContent: {
     flexGrow: 1,
     paddingBottom: 20,
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   emptyState: {
     paddingVertical: Spacing.xl,
