@@ -42,7 +42,9 @@ spring:
 
   web:
     resources:
-      static-locations: classpath:/static/, file:./uploads/
+      static-locations: classpath:/static/
+      # S3로 마이그레이션 완료 - 로컬 uploads 폴더 제거
+      # static-locations: classpath:/static/, file:./uploads/
 
 app:
   base-url: https://record.example.com
