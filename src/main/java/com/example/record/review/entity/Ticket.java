@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class Ticket {
+    //ㄴㄴㄴㄴㄴㄴㄴ
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
