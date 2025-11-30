@@ -1,5 +1,6 @@
 package com.example.record.promptcontrol_w03.service;
 
+import com.example.record.AWS.S3Service;
 import com.example.record.review.entity.GeneratedImageUrl;
 import com.example.record.review.entity.Review;
 import com.example.record.review.repository.GeneratedImageUrlRepository;
@@ -17,12 +18,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,18 +27,13 @@ public class ImageService {
 
     private final ReviewRepository reviewRepository;
     private final GeneratedImageUrlRepository generatedImageUrlRepository;
+    private final S3Service s3Service;
 
     @Value("${openai.api.key}")
     private String apiKey;
 
     @Value("${openai.model.image:dall-e-3}")
     private String imageModel;   // ★ 기본값 dall-e-3
-
-    @Value("${app.upload.generated-image-dir:uploads/generated-images}")
-    private String generatedImageDir;
-
-    @Value("${app.upload.generated-image-url-prefix:/uploads/generated-images}")
-    private String generatedImageUrlPrefix;
 
     private final WebClient webClient = WebClient.builder()
             .baseUrl("https://api.openai.com/v1")
@@ -224,9 +216,9 @@ public class ImageService {
     }
 
     /**
-     * 이미지를 4:5 비율로 크롭한 후 저장
+     * 이미지를 4:5 비율로 크롭한 후 S3에 저장
      * @param imageBytes 원본 이미지 바이트 배열
-     * @return 크롭된 이미지의 로컬 URL
+     * @return 크롭된 이미지의 S3 URL
      */
     private String cropAndSaveImage(byte[] imageBytes) {
         try {
@@ -261,23 +253,14 @@ public class ImageService {
             // 3. 크롭 실행
             BufferedImage croppedImage = originalImage.getSubimage(x, y, targetWidth, targetHeight);
 
-            // 4. 크롭된 이미지를 PNG로 저장
+            // 4. 크롭된 이미지를 PNG로 변환
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(croppedImage, "png", baos);
             byte[] croppedBytes = baos.toByteArray();
 
-            // 5. 파일 저장 (Record-BE 폴더 기준)
-            Path baseDir = com.example.record.config.PathUtils.getRecordBEDir();
-            Path uploadDir = baseDir.resolve(generatedImageDir).normalize();
-            Files.createDirectories(uploadDir);
-
-            String filename = "cropped_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID() + ".png";
-            Path target = uploadDir.resolve(filename);
-            Files.write(target, croppedBytes);
-
-            // 6. URL 반환
-            String url = generatedImageUrlPrefix + "/" + filename;
-            System.out.println("✅ 이미지 크롭 완료: " + url + " (원본: " + originalWidth + "x" + originalHeight + " → 크롭: " + targetWidth + "x" + targetHeight + ")");
+            // 5. S3에 저장
+            String url = s3Service.saveGeneratedImage(croppedBytes);
+            System.out.println("✅ 이미지 크롭 및 S3 업로드 완료: " + url + " (원본: " + originalWidth + "x" + originalHeight + " → 크롭: " + targetWidth + "x" + targetHeight + ")");
             return url;
 
         } catch (IOException e) {

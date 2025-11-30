@@ -83,12 +83,12 @@ stt:
 cloud:
   aws:
     credentials:
-      access-key: ${AWS_ACCESS_KEY_ID:}
-      secret-key: ${AWS_SECRET_ACCESS_KEY:}
+      access-key: ${RecAWS_ACCESS_KEY_ID}
+      secret-key: ${RecAWS_SECRET_ACCESS_KEY}
     region:
       static: ${AWS_REGION:ap-northeast-2}
     s3:
-      bucket: ${S3_BUCKET:recording-bucket}
+      bucket: ${RecS3_BUCKET}
 
 jwt:
   secret: ${JWT_SECRET:change-me-32bytes-minimum-aaaaaaaaaaaaaaa}

@@ -189,6 +189,14 @@ public class TicketService {
             throw new SecurityException("본인 티켓만 삭제 가능합니다.");
         }
         
+        // 1. 관련된 ticket_likes 먼저 삭제 (외래 키 제약 조건 해결)
+        long likeCount = ticketLikeRepository.countByTicket_Id(ticketId);
+        if (likeCount > 0) {
+            ticketLikeRepository.deleteByTicket_Id(ticketId);
+            log.info("티켓 좋아요 {}개 삭제 완료: ticketId={}", likeCount, ticketId);
+        }
+        
+        // 2. 티켓 삭제
         ticketRepository.delete(ticket);
         log.info("티켓 삭제 완료: ticketId={}, userId={}", ticketId, requesterUserId);
     }

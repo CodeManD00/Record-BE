@@ -2,8 +2,10 @@ package com.example.record.review.repository;
 
 import com.example.record.review.entity.TicketLike;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,5 +33,13 @@ public interface TicketLikeRepository extends JpaRepository<TicketLike, Long> {
      */
     @Query("SELECT tl.ticket.id FROM TicketLike tl WHERE tl.user.id = :userId")
     List<Long> findTicketIdsByUser_Id(@Param("userId") String userId);
+
+    /**
+     * 특정 티켓의 모든 좋아요 삭제 (티켓 삭제 시 사용)
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM TicketLike tl WHERE tl.ticket.id = :ticketId")
+    void deleteByTicket_Id(@Param("ticketId") Long ticketId);
 }
 

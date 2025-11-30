@@ -1,6 +1,8 @@
 package com.example.record;
 
+import com.example.record.AWS.S3Service;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -13,6 +15,9 @@ public class ApiKeyReCordApplication {
     private String apiKey;
 
     private final Environment env;
+    
+    @Autowired(required = false)
+    private S3Service s3Service;
 
     public ApiKeyReCordApplication(Environment env) {
         this.env = env;
@@ -37,6 +42,21 @@ public class ApiKeyReCordApplication {
             System.out.println("⚠️ 경고: 로컬 DB에 연결되어 있습니다!");
         } else if (dbUrl.contains("rds.amazonaws.com")) {
             System.out.println("✅ RDS DB에 연결되어 있습니다.");
+        }
+        System.out.println("===========================");
+
+        // S3 연결 정보 확인
+        System.out.println("=== AWS S3 연결 정보 ===");
+        if (s3Service != null) {
+            System.out.println("S3 설정: " + s3Service.getConfigInfo());
+            boolean s3Connected = s3Service.testConnection();
+            if (s3Connected) {
+                System.out.println("✅ S3 연결 성공");
+            } else {
+                System.out.println("❌ S3 연결 실패 - 환경 변수를 확인해주세요.");
+            }
+        } else {
+            System.out.println("⚠️ S3Service가 주입되지 않았습니다.");
         }
         System.out.println("===========================");
 

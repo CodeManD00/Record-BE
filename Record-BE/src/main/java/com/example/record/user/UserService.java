@@ -1,13 +1,10 @@
 package com.example.record.user;
 
+import com.example.record.AWS.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 @RequiredArgsConstructor
@@ -15,6 +12,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final LocalFileStorageService localFileStorageService;
+    private final S3Service s3Service;
 
     @Transactional
     public User updateProfile(User user, UserController.UpdateProfileRequest req) {
@@ -79,19 +77,14 @@ public class UserService {
     private void deleteOldImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) return;
 
-        try {
-            // URL → 파일 이름만 추출
-            String filename = imageUrl.replace("/uploads/profile-images/", "");
-
-            // 실제 서버의 파일 경로로 변환
-            Path filePath = Paths.get("uploads/profile-images").resolve(filename);
-
-            // 파일 삭제
-            Files.deleteIfExists(filePath);
-
-        } catch (Exception e) {
-            // 삭제 실패해도 기능 자체는 계속 진행
-            System.out.println("⚠ 기존 프로필 이미지 삭제 실패: " + e.getMessage());
+        // S3 URL인 경우 S3에서 삭제, 로컬 경로인 경우 무시 (마이그레이션 중일 수 있음)
+        if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            // S3 URL인 경우
+            s3Service.deleteFile(imageUrl);
+        } else {
+            // 로컬 경로인 경우 (기존 데이터 마이그레이션 중일 수 있음)
+            // S3로 완전히 전환되면 이 부분은 제거 가능
+            System.out.println("⚠ 로컬 경로 이미지는 삭제하지 않음 (S3로 마이그레이션 필요): " + imageUrl);
         }
     }
 

@@ -6,11 +6,14 @@ package com.example.record.AWS;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +34,31 @@ public class S3Controller {
             // 업로드 실패 시 500 오류 응답
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("파일 업로드 중 오류 발생: " + e.getMessage());
+        }
+    }
+
+    // GET /s3/test - S3 연결 테스트 엔드포인트
+    @GetMapping("/s3/test")
+    public ResponseEntity<Map<String, Object>> testConnection() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            boolean connected = s3Service.testConnection();
+            response.put("connected", connected);
+            response.put("config", s3Service.getConfigInfo());
+            
+            if (connected) {
+                response.put("message", "S3 연결 성공");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("message", "S3 연결 실패");
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+            }
+        } catch (Exception e) {
+            response.put("connected", false);
+            response.put("error", e.getMessage());
+            response.put("message", "S3 연결 확인 중 오류 발생");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 }
