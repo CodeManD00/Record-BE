@@ -68,7 +68,7 @@ public class FriendshipController {
     @PostMapping("/{friendshipId}/accept")
     public ResponseEntity<?> acceptFriendRequest(
             @RequestHeader("X-User-Id") String requesterId,
-            @PathVariable Long friendshipId) {
+            @PathVariable("friendshipId") Long friendshipId) {
         try {
             boolean success = friendshipService.acceptFriendRequest(requesterId, friendshipId);
             if (success) {
@@ -93,7 +93,7 @@ public class FriendshipController {
     @PostMapping("/{friendshipId}/reject")
     public ResponseEntity<?> rejectFriendRequest(
             @RequestHeader("X-User-Id") String requesterId,
-            @PathVariable Long friendshipId) {
+            @PathVariable("friendshipId") Long friendshipId) {
         try {
             boolean success = friendshipService.rejectFriendRequest(requesterId, friendshipId);
             if (success) {
@@ -197,7 +197,7 @@ public class FriendshipController {
     @DeleteMapping("/{friendshipId}")
     public ResponseEntity<?> deleteFriendship(
             @RequestHeader("X-User-Id") String requesterId,
-            @PathVariable Long friendshipId) {
+            @PathVariable("friendshipId") Long friendshipId) {
         try {
             boolean success = friendshipService.deleteFriendship(requesterId, friendshipId);
             if (success) {

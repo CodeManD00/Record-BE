@@ -80,7 +80,7 @@ public class ReviewManagementController {
      */
     @PatchMapping("/{reviewId}")
     public ResponseEntity<Void> updateReview(
-            @PathVariable Long reviewId,
+            @PathVariable("reviewId") Long reviewId,
             @RequestHeader("X-User-Id") String requesterUserId,
             @RequestBody ReviewUpdateRequest request
     ) {
@@ -116,7 +116,7 @@ public class ReviewManagementController {
      */
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<Void> deleteReview(
-            @PathVariable Long reviewId,
+            @PathVariable("reviewId") Long reviewId,
             @RequestHeader("X-User-Id") String requesterUserId
     ) {
         // 리뷰 삭제 요청 처리

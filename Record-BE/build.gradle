@@ -81,5 +81,5 @@ tasks.named('bootRun') {
 
 tasks.withType(JavaCompile).configureEach {
 	options.encoding = 'UTF-8'
-	options.compilerArgs << '-parameters'
+	options.compilerArgs.add('-parameters')
 }
