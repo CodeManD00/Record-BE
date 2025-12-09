@@ -157,6 +157,16 @@ chmod +x generate-sample-data.sh
 
 모든 오픈소스는 상업적 사용이 가능하며, 각 라이선스를 준수합니다.
 
+### 상용 API 서비스 
+
+- **OpenAI API** (Whisper, GPT, DALL-E) 
+  - 사용을 위해 API 키와 결제 계정이 필요합니다
+  - 오픈소스 라이브러리가 아니라 REST API를 통해 호출하는 서비스입니다
+
+- **Google Cloud Vision API** 
+  - 사용을 위해 Google Cloud 계정과 결제 설정이 필요합니다
+  - SDK는 오픈소스이지만, API 자체는 상용 서비스입니다
+
 ## 보안 주의사항
 
 - **절대** 기본 비밀번호(`recordpass` 등)를 사용하지 마세요
