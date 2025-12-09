@@ -4,7 +4,7 @@
 #
 # Code를 만들어 낼 수 있는 방법 및 Script 포함
 # - Backend 빌드: make be-build
-#
+#의존성
 # ============================================================================
 
 .PHONY: help be-build be-run be-test be-clean
