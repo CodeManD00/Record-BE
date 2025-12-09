@@ -8,7 +8,6 @@
 # 1. 사전 요구사항 확인
 #    - Java 21 이상 설치 확인
 #    - PostgreSQL 설치 확인
-#    - Node.js 설치 확인 (Frontend 개발 시)
 #
 # 2. 환경 변수 자동 설정
 #    - .env 파일 자동 생성
@@ -87,18 +86,6 @@ if ! command -v psql &> /dev/null; then
     fi
 else
     echo -e "${GREEN}✅ PostgreSQL 확인 완료${NC}"
-fi
-
-# Node.js 확인 (Frontend용)
-if ! command -v node &> /dev/null; then
-    echo -e "${YELLOW}⚠️  Node.js가 설치되지 않았습니다. (Frontend 개발 시 필요)${NC}"
-else
-    NODE_VERSION=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        echo -e "${YELLOW}⚠️  Node.js 18 이상을 권장합니다. 현재 버전: $(node -v)${NC}"
-    else
-        echo -e "${GREEN}✅ Node.js 버전 확인: $(node -v)${NC}"
-    fi
 fi
 
 echo ""

@@ -1,8 +1,8 @@
 # Record Project
 
-공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
+공연 티켓 기록 및 리뷰 관리 시스템 - Backend 프로젝트
 
-이 프로젝트는 **Backend (Spring Boot)**와 **Frontend (React Native)**로 구성된 풀스택 애플리케이션입니다.
+이 프로젝트는 **Backend (Spring Boot)** 기반 RESTful API 서버입니다.
 
 ## Git Clone 후 재생성 가능
 
@@ -13,21 +13,13 @@
 #### 1. Code를 만들어 낼 수 있는 방법 및 Script 포함
 
 **Makefile 및 빌드 스크립트 포함:**
-- 프로젝트 루트: `Record-BE/Makefile` - 통합 Makefile (Backend + Frontend)
-- Frontend: `Record-FE/Makefile` - Frontend 전용 Makefile
+- 프로젝트 루트: `Record-BE/Makefile` - 통합 Makefile
 - Backend: `Record-BE/Record-BE/build.gradle` - Gradle 빌드 스크립트
-- Frontend: `Record-FE/package.json` - npm scripts
 
 **코드 생성 방법:**
 ```bash
-# 전체 프로젝트 빌드
-make build-all
-
 # Backend 빌드
 make be-build
-
-# Frontend 빌드
-make fe-install
 ```
 
 자세한 내용: [How to Build](#how-to-build), [Scripts - 통합 Makefile](#통합-makefile)
@@ -76,7 +68,6 @@ chmod +x generate-sample-data.sh
 
 **모든 사용 오픈소스 라이선스 정보 포함:**
 - Backend 오픈소스 목록 및 라이선스
-- Frontend 오픈소스 목록 및 라이선스
 - 각 라이브러리의 버전 및 라이선스 링크
 
 자세한 내용: [Description of Used Open Source](#description-of-used-open-source)
@@ -100,17 +91,15 @@ chmod +x generate-sample-data.sh
 - [빠른 시작](#빠른-시작)
 - [환경 변수 및 API 키 설정](#환경-변수-및-api-키-설정)
 - [Backend (Record-BE)](#backend-record-be)
-- [Frontend (Record-FE)](#frontend-record-fe)
-- [전체 시스템 아키텍처](#전체-시스템-아키텍처)
 - [Scripts](#scripts)
 
 ## Source Code 설명
 
 ### 프로젝트 개요
 
-Record는 공연 티켓을 디지털로 기록하고, 공연 리뷰를 작성하며, AI 기반 기능을 활용하여 공연 경험을 향상시키는 모바일 애플리케이션입니다.
+Record는 공연 티켓을 디지털로 기록하고, 공연 리뷰를 작성하며, AI 기반 기능을 활용하여 공연 경험을 향상시키는 애플리케이션의 Backend 서버입니다.
 
-이 프로젝트는 **Backend (Spring Boot)**와 **Frontend (React Native)**로 구성된 풀스택 애플리케이션으로, RESTful API를 통해 통신합니다.
+이 프로젝트는 **Backend (Spring Boot)** 기반 RESTful API 서버로, 클라이언트 애플리케이션에 데이터와 기능을 제공합니다.
 
 ### 시스템 구성
 
@@ -131,20 +120,6 @@ Record는 공연 티켓을 디지털로 기록하고, 공연 리뷰를 작성하
   - `AWS/` - AWS S3 파일 저장
   - `config/` - 설정 클래스
 
-#### Frontend (Record-FE)
-- **언어**: TypeScript
-- **프레임워크**: React Native 0.81.0
-- **상태 관리**: Jotai
-- **네비게이션**: React Navigation
-- **플랫폼**: iOS, Android
-- **주요 디렉토리 구조**:
-  - `src/pages/` - 화면 컴포넌트
-  - `src/components/` - 재사용 가능한 UI 컴포넌트
-  - `src/atoms/` - Jotai 상태 관리
-  - `src/services/` - API 서비스
-  - `src/types/` - TypeScript 타입 정의
-  - `src/utils/` - 유틸리티 함수
-
 ### 코드 생성 방법
 
 이 프로젝트의 코드는 다음 방법으로 생성할 수 있습니다:
@@ -152,18 +127,11 @@ Record는 공연 티켓을 디지털로 기록하고, 공연 리뷰를 작성하
 1. **Makefile 사용** (권장)
    ```bash
    make be-build    # Backend 빌드
-   make fe-install  # Frontend 의존성 설치
    ```
 
-2. **Gradle 직접 사용** (Backend)
+2. **Gradle 직접 사용**
    ```bash
    ./gradlew build
-   ```
-
-3. **npm/yarn 사용** (Frontend)
-   ```bash
-   npm install
-   npm run android
    ```
 
 자세한 내용은 [How to Build](#how-to-build) 섹션을 참고하세요.
@@ -518,33 +486,6 @@ MAIL_PASSWORD=your_16_digit_app_password_here
 EOF
 ```
 
-**Frontend `.env` 파일 생성:**
-
-```bash
-# Record-FE/.env 파일 생성
-cd Record-FE
-cat > .env << 'EOF'
-# ============================================
-# 필수 설정
-# ============================================
-
-# Backend API URL
-# 로컬 개발: http://localhost:8080
-# Android 에뮬레이터: http://10.0.2.2:8080
-# 실제 기기: http://<your-computer-ip>:8080
-API_BASE_URL=http://localhost:8080
-
-# ============================================
-# 선택적 설정
-# ============================================
-
-# Google Sign-In (소셜 로그인 사용 시)
-# 발급: https://console.cloud.google.com/
-# 보안: 실제 Client ID로 교체하고 절대 Git에 커밋하지 마세요
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-EOF
-```
-
 **환경 변수 로드:**
 
 `.env` 파일을 생성한 후, 환경 변수를 로드하려면:
@@ -576,17 +517,13 @@ cd Record-BE/Record-BE
 echo $DB_URL
 echo $JWT_SECRET
 echo $OPENAI_API_KEY
-
-# Frontend
-cd Record-FE
-cat .env
 ```
 
 ## Backend (Record-BE)
 
 ### 개요
 
-Spring Boot 기반 RESTful API 서버로, 프론트엔드 애플리케이션에 데이터와 기능을 제공합니다.
+Spring Boot 기반 RESTful API 서버로, 클라이언트 애플리케이션에 데이터와 기능을 제공합니다.
 
 ### 기술 스택
 
@@ -658,105 +595,9 @@ Spring Boot 기반 RESTful API 서버로, 프론트엔드 애플리케이션에 
 ```
 
 
-## Frontend (Record-FE)
-
-### 개요
-
-React Native 기반 모바일 애플리케이션으로, iOS와 Android 플랫폼을 모두 지원합니다.
-
-### 기술 스택
-
-- **React Native 0.81.0**
-- **TypeScript 5.8.3**
-- **React Navigation 7.x**
-- **Jotai 2.15.0** (상태 관리)
-- **Axios 1.13.2** (HTTP 클라이언트)
-
-### 주요 기능
-
-#### 1. 사용자 인증
-- 로그인, 회원가입
-- 아이디/비밀번호 찾기
-- 소셜 로그인 (Google)
-
-#### 2. 티켓 관리
-- 티켓 추가 (이미지 촬영/선택, OCR, 수동 입력)
-- 티켓 조회 (그리드/리스트 뷰)
-- 티켓 수정/삭제
-
-#### 3. OCR 기능
-- 티켓 이미지에서 공연 정보 자동 추출
-
-#### 4. STT 기능
-- 음성 녹음 및 텍스트 변환
-
-#### 5. AI 이미지 생성
-- DALL-E를 활용한 리뷰 기반 이미지 생성
-
-#### 6. 리뷰 작성 및 관리
-- 템플릿 기반 질문 답변
-- 자유 형식 텍스트 입력
-- 키워드 태깅
-
-#### 7. 캘린더
-- 월간/주간 뷰
-- 공연 일정 표시
-
-#### 8. 친구 관리
-- 친구 검색 및 추가
-- 친구 목록 조회
-
-#### 9. 마이페이지
-- 프로필 관리
-- 계정 설정
-
-#### 10. 아카이브
-- 연도별 요약 (Year in Review)
-- 통계 분석
-- 검색 및 히스토리
-
-### 아키텍처
+## 시스템 아키텍처
 
 ```
-┌─────────────────────────────────────┐
-│      Pages (화면 컴포넌트)            │  ← 사용자 인터페이스
-│  (LoginPage, MainPage, etc.)        │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│      Components (재사용 컴포넌트)    │  ← UI 컴포넌트
-│  (Button, Card, TicketGrid, etc.)   │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│      Atoms (상태 관리)               │  ← Jotai 상태
-│  (userAtoms, ticketAtoms, etc.)     │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│      Services (API 통신)             │  ← 백엔드 API 호출
-│  (userService, ticketService, etc.)  │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│      Backend API (Record-BE)         │  ← REST API
-└─────────────────────────────────────┘
-```
-
-
-## 전체 시스템 아키텍처
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Mobile App (React Native)            │
-│                    Record-FE                            │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐            │
-│  │  Pages   │  │Components│  │  Atoms   │            │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘            │
-│       │             │             │                   │
-│       └─────────────┴─────────────┘                   │
-│                    │                                   │
-│              ┌─────▼─────┐                            │
 │              │ Services  │                            │
 │              │  (API)    │                            │
 │              └─────┬─────┘                            │
@@ -792,16 +633,7 @@ React Native 기반 모바일 애플리케이션으로, iOS와 Android 플랫폼
 
 이 섹션에서는 프로젝트의 코드를 생성하고 빌드하는 모든 방법을 설명합니다. Makefile을 포함한 모든 빌드 스크립트가 포함되어 있습니다.
 
-### 전체 프로젝트 빌드
-
-#### 방법 1: Makefile 사용 (권장)
-
-```bash
-# 프로젝트 루트에서
-make build-all    # Backend + Frontend 모두 빌드
-```
-
-#### 방법 2: 개별 빌드
+### Backend 빌드
 
 **Backend 빌드:**
 ```bash
@@ -813,12 +645,6 @@ make build
 
 ```bash
 make be-build
-```
-
-**Frontend 빌드:**
-```bash
-cd Record-FE
-make install
 ```
 
 ### Backend 빌드
@@ -840,46 +666,22 @@ cd Record-BE/Record-BE
 make build
 ```
 
-### Frontend 빌드
-
-#### 사전 요구사항
-- Node.js 18 이상
-- npm 또는 yarn
-- Android Studio (Android 빌드 시)
-- Xcode (iOS 빌드 시, macOS만)
-
-#### 빌드 방법
-
-```bash
-cd Record-FE
-npm install
-npm run android    # Android
-npm run ios        # iOS (macOS만)
-```
-
-또는 Makefile 사용:
-```bash
-make install
-make android       # Android
-make ios           # iOS (macOS만)
-```
-
 ## How to Install
 
 **Proto-system 설치 방법 및 Script**
 
 이 섹션에서는 프로젝트를 처음부터 설치하는 방법을 설명합니다. 자동 설치 스크립트(`setup.sh`)와 수동 설치 방법을 모두 포함합니다.
 
-### 전체 시스템 설치
+### Backend 설치 및 실행
 
 #### 1. 저장소 클론
 
 ```bash
 git clone <repository-url>
-cd Record
+cd Record-BE
 ```
 
-#### 2. Backend 설치 및 실행
+#### 2. 환경 변수 설정 및 데이터베이스 설정
 
 ```bash
 cd Record-BE/Record-BE
@@ -924,26 +726,6 @@ make be-run
 - JWT 시크릿 키는 `openssl rand -base64 32` 명령어로 생성하세요
 
 Backend는 http://localhost:8080 에서 실행됩니다.
-
-#### 3. Frontend 설치 및 실행
-
-**새 터미널에서:**
-
-```bash
-cd Record-FE
-
-# 환경 변수 설정
-echo "API_BASE_URL=http://localhost:8080" > .env
-
-# 의존성 설치
-make install
-
-# Android 실행
-make android
-
-# 또는 iOS 실행 (macOS만)
-make ios
-```
 
 ### Backend 설치 및 실행
 
@@ -1012,52 +794,7 @@ make be-run
 - **애플리케이션**: http://localhost:8080
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 
-### Frontend 설치 및 실행
-
-#### 1. 환경 변수 설정
-
-**필수 환경 변수:**
-```env
-# Backend API URL
-API_BASE_URL=http://localhost:8080  # 로컬 개발
-# API_BASE_URL=http://10.0.2.2:8080  # Android 에뮬레이터
-# API_BASE_URL=http://<your-ip>:8080  # 실제 기기
-```
-
-**선택적 환경 변수:**
-```env
-GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-```
-
-자세한 환경 변수 설정 방법은 [환경 변수 및 API 키 설정](#환경-변수-및-api-키-설정) 섹션을 참고하세요.
-
-#### 2. 의존성 설치
-
-```bash
-cd Record-FE
-make install
-```
-
-#### 3. 애플리케이션 실행
-
-**Android:**
-```bash
-make android
-```
-
-**iOS (macOS만):**
-```bash
-make ios
-```
-
 ## How to Test
-
-### 전체 프로젝트 테스트
-
-```bash
-# 프로젝트 루트에서
-make test-all    # Backend + Frontend 모두 테스트
-```
 
 ### Backend 테스트
 
@@ -1076,19 +813,6 @@ make be-test
 
 ```bash
 ./gradlew test
-```
-
-### Frontend 테스트
-
-```bash
-cd Record-FE
-make test
-```
-
-또는:
-
-```bash
-npm test
 ```
 
 ## Description of Sample Data
@@ -1177,14 +901,7 @@ EOF
    - `POST /api/tickets` - 티켓 생성
    - `POST /api/reviews` - 리뷰 생성
 
-### 2. 앱을 통한 데이터 생성
-
-1. Frontend 앱 실행
-2. 회원가입으로 사용자 계정 생성
-3. 티켓 추가 기능으로 티켓 데이터 생성
-4. 리뷰 작성 기능으로 리뷰 데이터 생성
-
-### 3. SQL 스크립트 사용
+### 2. SQL 스크립트 사용
 
 **데이터베이스 스키마 생성:**
 
@@ -1296,83 +1013,14 @@ psql -U recorduser -d recorddb -f "Record-BE/Record-BE/SQL for local DB"
 - **JUnit 5** - [Eclipse Public License 2.0](https://www.eclipse.org/legal/epl-2.0/)
   - 단위 테스트 및 통합 테스트
 
-### Frontend 오픈소스
-
-#### 핵심 프레임워크
-- **React Native** (0.81.0) - [MIT License](https://github.com/facebook/react-native/blob/main/LICENSE)
-  - 크로스 플랫폼 모바일 애플리케이션 프레임워크
-- **React** (19.1.0) - [MIT License](https://github.com/facebook/react/blob/main/LICENSE)
-  - UI 라이브러리
-
-#### 네비게이션
-- **React Navigation** (7.x) - [MIT License](https://github.com/react-navigation/react-navigation/blob/main/LICENSE)
-  - `@react-navigation/native` (7.1.18)
-  - `@react-navigation/native-stack` (7.3.28)
-  - `@react-navigation/bottom-tabs` (7.4.6)
-  - `@react-navigation/stack` (7.4.7)
-
-#### 상태 관리
-- **Jotai** (2.15.0) - [MIT License](https://github.com/pmndrs/jotai/blob/main/LICENSE)
-  - 원자 기반 상태 관리 라이브러리
-
-#### HTTP 클라이언트
-- **Axios** (1.13.2) - [MIT License](https://github.com/axios/axios/blob/master/LICENSE)
-  - RESTful API 통신
-
-#### 언어 및 타입
-- **TypeScript** (5.8.3) - [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
-  - 정적 타입 검사
-
-#### 미디어 및 파일
-- **React Native Voice** (3.2.4) - [MIT License](https://github.com/react-native-voice/voice/blob/master/LICENSE)
-  - 음성 인식 및 STT 기능
-- **React Native Image Picker** (8.2.1) - [MIT License](https://github.com/react-native-image-picker/image-picker/blob/master/LICENSE)
-  - 이미지 선택 및 촬영
-- **React Native Audio Recorder Player** (3.3.0) - [MIT License](https://github.com/hyochan/react-native-audio-recorder-player/blob/master/LICENSE)
-  - 오디오 녹음 및 재생
-- **react-native-fs** (2.20.0) - [MIT License](https://github.com/itinance/react-native-fs/blob/master/LICENSE)
-  - 파일 시스템 접근
-- **@react-native-camera-roll/camera-roll** (7.10.2) - [MIT License](https://github.com/react-native-camera-roll/camera-roll/blob/main/LICENSE)
-  - 갤러리 접근
-
-#### UI 컴포넌트
-- **React Native Calendars** (1.1313.0) - [MIT License](https://github.com/wix/react-native-calendars/blob/master/LICENSE)
-  - 캘린더 컴포넌트
-- **react-native-svg** (15.0.0) - [MIT License](https://github.com/react-native-svg/react-native-svg/blob/master/LICENSE)
-  - SVG 렌더링
-- **@react-native-community/blur** (4.4.1) - [MIT License](https://github.com/react-native-community/blur/blob/master/LICENSE)
-  - 블러 효과
-- **@react-native-community/datetimepicker** (8.4.5) - [MIT License](https://github.com/react-native-community/datetimepicker/blob/master/LICENSE)
-  - 날짜/시간 선택기
-
-#### 인증
-- **@react-native-google-signin/google-signin** (11.0.0) - [MIT License](https://github.com/react-native-google-signin/google-signin/blob/master/LICENSE)
-  - Google Sign-In 통합
-
-#### 데이터 저장
-- **@react-native-async-storage/async-storage** (2.2.0) - [MIT License](https://github.com/react-native-async-storage/async-storage/blob/master/LICENSE)
-  - 로컬 데이터 저장
-
-#### AI 및 외부 API
-- **OpenAI SDK** (6.6.0) - [MIT License](https://github.com/openai/openai-node/blob/main/LICENSE)
-  - OpenAI API 클라이언트
-
-#### 개발 도구
-- **ESLint** (8.19.0) - [MIT License](https://github.com/eslint/eslint/blob/main/LICENSE)
-  - 코드 린팅
-- **Prettier** (2.8.8) - [MIT License](https://github.com/prettier/prettier/blob/main/LICENSE)
-  - 코드 포맷팅
-- **Jest** (29.6.3) - [MIT License](https://github.com/jestjs/jest/blob/main/LICENSE)
-  - 테스트 프레임워크
-
 ### 오픈소스 라이선스 요약
 
 이 프로젝트에서 사용하는 모든 오픈소스 라이브러리는 다음과 같은 라이선스를 따릅니다:
 
-- **Apache License 2.0**: Spring Boot, AWS SDK, Google Cloud SDK, TypeScript 등
-- **MIT License**: React Native, React, Jotai, Axios, 대부분의 React Native 라이브러리
+- **Apache License 2.0**: Spring Boot, AWS SDK, Google Cloud SDK 등
 - **BSD License**: PostgreSQL JDBC Driver
 - **Eclipse Public License 2.0**: JUnit 5
+- **MIT License**: Lombok
 
 모든 오픈소스 라이브러리는 각각의 라이선스를 준수하며, 상업적 사용이 가능합니다.
 
@@ -1398,7 +1046,7 @@ psql -U recorduser -d recorddb -f "Record-BE/Record-BE/SQL for local DB"
 **위치:** `Record-BE/Record-BE/setup.sh`
 
 **기능:**
-- 사전 요구사항 확인 (Java, PostgreSQL, Node.js)
+- 사전 요구사항 확인 (Java, PostgreSQL)
 - 환경 변수 자동 설정 (.env 파일 생성)
 - 데이터베이스 자동 생성 및 설정
 - Backend 의존성 자동 설치
@@ -1477,16 +1125,11 @@ chmod +x generate-sample-data.sh
 **전체 Makefile 내용:**
 
 ```makefile
-.PHONY: help build-all test-all install-all be-build be-run be-test fe-install fe-android fe-ios fe-test clean
+.PHONY: help be-build be-run be-test be-clean
 
 # 기본 타겟
 help:
-	@echo "Record Project - 통합 Makefile"
-	@echo ""
-	@echo "전체 프로젝트 명령어:"
-	@echo "  make build-all      - Backend + Frontend 모두 빌드"
-	@echo "  make test-all       - Backend + Frontend 모두 테스트"
-	@echo "  make install-all    - Backend + Frontend 모두 설치"
+	@echo "Record Project - Backend Makefile"
 	@echo ""
 	@echo "Backend 명령어:"
 	@echo "  make be-build       - Backend 빌드"
@@ -1494,28 +1137,7 @@ help:
 	@echo "  make be-test        - Backend 테스트"
 	@echo "  make be-clean       - Backend 정리"
 	@echo ""
-	@echo "Frontend 명령어:"
-	@echo "  make fe-install     - Frontend 의존성 설치"
-	@echo "  make fe-start        - Frontend Metro 번들러 시작"
-	@echo "  make fe-android     - Frontend Android 실행"
-	@echo "  make fe-ios         - Frontend iOS 실행 (macOS만)"
-	@echo "  make fe-test        - Frontend 테스트"
-	@echo "  make fe-lint        - Frontend 린트 검사"
-	@echo "  make fe-clean       - Frontend 정리"
-	@echo ""
 	@echo "  make help           - 이 도움말 표시"
-
-# 전체 프로젝트 빌드
-build-all: be-build fe-install
-	@echo "✅ 전체 프로젝트 빌드 완료"
-
-# 전체 프로젝트 테스트
-test-all: be-test fe-test
-	@echo "✅ 전체 프로젝트 테스트 완료"
-
-# 전체 프로젝트 설치
-install-all: be-install fe-install
-	@echo "✅ 전체 프로젝트 설치 완료"
 
 # ============================================
 # Backend 명령어
@@ -1551,82 +1173,12 @@ be-jar: be-build
 	@echo "📦 Backend JAR 파일 생성 완료: Record-BE/Record-BE/build/libs/Record-BE-0.0.1-SNAPSHOT.jar"
 
 # ============================================
-# Frontend 명령어
-# ============================================
-
-# Frontend 의존성 설치
-fe-install:
-	@echo "📦 Frontend 의존성 설치 중..."
-	@cd Record-FE && npm install
-	@echo "📦 iOS 의존성 설치 중 (macOS만)..."
-	@if [ "$$(uname)" = "Darwin" ]; then \
-		cd Record-FE/ios && bundle exec pod install && cd ../..; \
-	fi
-	@echo "✅ Frontend 의존성 설치 완료"
-
-# Frontend Metro 번들러 시작
-fe-start:
-	@echo "🚀 Frontend Metro 번들러 시작 중..."
-	@cd Record-FE && npm start
-
-# Frontend Android 실행
-fe-android:
-	@echo "🤖 Frontend Android 앱 빌드 및 실행 중..."
-	@cd Record-FE && npm run android
-
-# Frontend iOS 실행 (macOS만)
-fe-ios:
-	@echo "🍎 Frontend iOS 앱 빌드 및 실행 중..."
-	@if [ "$$(uname)" != "Darwin" ]; then \
-		echo "❌ iOS 빌드는 macOS에서만 가능합니다."; \
-		exit 1; \
-	fi
-	@cd Record-FE && npm run ios
-
-# Frontend 테스트
-fe-test:
-	@echo "🧪 Frontend 테스트 실행 중..."
-	@cd Record-FE && npm test
-
-# Frontend 린트 검사
-fe-lint:
-	@echo "🔍 Frontend ESLint 검사 중..."
-	@cd Record-FE && npm run lint
-
-# Frontend 정리
-fe-clean:
-	@echo "🧹 Frontend 빌드 산출물 및 캐시 정리 중..."
-	@cd Record-FE && rm -rf node_modules
-	@cd Record-FE && rm -rf ios/Pods
-	@cd Record-FE && rm -rf ios/build
-	@cd Record-FE && rm -rf android/build
-	@cd Record-FE && rm -rf android/app/build
-	@echo "✅ Frontend 정리 완료"
-
-# Frontend 캐시만 정리
-fe-clean-cache:
-	@echo "🧹 Frontend 캐시만 정리 중..."
-	@rm -rf $$TMPDIR/react-*
-	@rm -rf $$TMPDIR/metro-*
-	@rm -rf $$TMPDIR/haste-*
-	@echo "✅ Frontend 캐시 정리 완료"
-
-# Frontend iOS Pods 재설치
-fe-pod-install:
-	@echo "📦 Frontend iOS Pods 재설치 중..."
-	@if [ "$$(uname)" = "Darwin" ]; then \
-		cd Record-FE/ios && pod deintegrate && pod install && cd ../..; \
-	else \
-		echo "❌ iOS Pods는 macOS에서만 설치할 수 있습니다."; \
-	fi
-
-# ============================================
 # 전체 정리
 # ============================================
 
 # 전체 정리
-clean: be-clean fe-clean
-	@echo "✅ 전체 프로젝트 정리 완료"
+clean: be-clean
+	@echo "✅ Backend 정리 완료"
 ```
 
 **사용 예시:**
@@ -1637,23 +1189,17 @@ clean: be-clean fe-clean
 # 도움말 보기
 make help
 
-# 전체 프로젝트 빌드
-make build-all
-
-# Backend만 빌드
+# Backend 빌드
 make be-build
 
 # Backend 실행
 make be-run
 
-# Frontend Android 실행
-make fe-android
+# Backend 테스트
+make be-test
 
-# 전체 테스트
-make test-all
-
-# 전체 정리
-make clean
+# Backend 정리
+make be-clean
 ```
 
 ### Backend 스크립트
@@ -1685,12 +1231,6 @@ cd Record-BE/Record-BE
 chmod +x setup.sh generate-sample-data.sh
 ```
 
-### Frontend 스크립트
-
-`Record-FE/` 디렉토리에 포함된 스크립트:
-
-- `Makefile` - 빌드 및 실행 스크립트
-
 ## 추가 정보
 
 ### 프로젝트 구조
@@ -1713,20 +1253,6 @@ Record/
 │   │   └── test/
 │   ├── build.gradle
 │   └── *.sh
-│
-└── Record-FE/              # Frontend
-    ├── src/
-    │   ├── assets/         # 이미지, 폰트 등
-    │   ├── atoms/          # Jotai 상태 관리
-    │   ├── components/     # 재사용 컴포넌트
-    │   ├── pages/          # 화면 컴포넌트
-    │   ├── services/       # API 서비스
-    │   ├── types/          # TypeScript 타입
-    │   └── utils/          # 유틸리티
-    ├── android/            # Android 네이티브 코드
-    ├── ios/                # iOS 네이티브 코드
-    ├── package.json
-    └── Makefile
 ```
 
 ## 라이선스
