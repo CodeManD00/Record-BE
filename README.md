@@ -4,9 +4,9 @@
 
 ## 빠른 시작
 
-### 자동 설치 (권장)
+### 자동 설치
 ```bash
-cd Record-BE/Record-BE
+cd Record-BE
 chmod +x setup.sh
 ./setup.sh
 ```
@@ -101,29 +101,10 @@ cd Record-BE/Record-BE
 ./gradlew build
 ```
 
-또는 Makefile 사용:
-```bash
-make be-build
-```
-
 ### 실행
 ```bash
+cd Record-BE/Record-BE
 ./gradlew bootRun
-```
-
-또는:
-```bash
-make be-run
-```
-
-### 테스트
-```bash
-./gradlew test
-```
-
-또는:
-```bash
-make be-test
 ```
 
 ## API 문서
@@ -135,7 +116,7 @@ make be-test
 
 개발 및 테스트를 위한 샘플 데이터 생성:
 ```bash
-cd Record-BE/Record-BE
+cd Record-BE
 chmod +x generate-sample-data.sh
 ./generate-sample-data.sh
 ```
@@ -185,5 +166,4 @@ chmod +x generate-sample-data.sh
 - 프로덕션 환경에서는 환경 변수 관리 도구 사용 권장
 
 ## 라이선스
-
-이 프로젝트의 라이선스는 프로젝트 소유자에게 문의하세요.
+코드만두에 문의하세요.
