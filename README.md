@@ -1,4 +1,4 @@
-# Record by CODEMANDU
+# Record by CODEMAND00
 
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
