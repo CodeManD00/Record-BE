@@ -84,7 +84,7 @@ cd Record-FE && npm install
 cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 ```
 
-## 빌드하기 : 프로젝트 컴파일
+## 빌드하기
 
 ### Backend
 ```bash
@@ -108,7 +108,7 @@ cd Record-FE && npm start
 cd Record-FE && npm run ios 
 ```
 
-## 테스트하기 : 테스트 실행
+## 테스트하기
 
 ```bash
 # Backend
