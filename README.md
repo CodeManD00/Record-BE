@@ -34,7 +34,7 @@ chmod +x setup.sh
 
 설치 완료 후 다음 단계를 진행하세요:
 
-**1. Frontend 의존성 설치 (Frontend 사용 시)**
+**1. Frontend 의존성 설치 **
 ```bash
 cd Record-FE && npm install
 cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
