@@ -2,14 +2,6 @@
 
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
-## 빠른 시작
-
-```bash
-cd Record-BE/Record-BE
-chmod +x setup.sh
-./setup.sh
-```
-
 ## 프로젝트 개요
 
 - **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
@@ -22,20 +14,42 @@ chmod +x setup.sh
 2. [빌드하기](#빌드하기)
 3. [실행하기](#실행하기)
 4. [테스트하기](#테스트하기)
-5. [샘플 데이터](#샘플-데이터)
-6. [데이터](#데이터)
+5. [데이터](#데이터)
+6. [의존성](#의존성)
 7. [오픈소스](#오픈소스)
 
 ## 설치하기 : 환경 설정 및 의존성 설치
 
-### 자동 설치
+### 👤 사용자 입장 (빠른 시작)
+
+자동 설치 스크립트를 사용하여 환경 설정, 의존성 설치, 샘플 데이터까지 한 번에 설정합니다.
+
 ```bash
 cd Record-BE/Record-BE
 chmod +x setup.sh
 ./setup.sh
 ```
 
-### 수동 설치
+설치 완료 후 샘플 데이터를 생성합니다:
+
+```bash
+chmod +x generate-sample-data.sh
+./generate-sample-data.sh
+```
+
+**생성되는 샘플 데이터:**
+- 사용자 3명 (admin@example.com, user1@example.com, user2@example.com)
+- 비밀번호: `password123` (모든 사용자 동일)
+- 뮤지컬 정보 3개 (레미제라블, 시카고, 위키드)
+- 티켓 데이터 3개
+- 리뷰 데이터 2개
+- 친구 관계 1개
+
+---
+
+### 👨‍💻 개발자 입장 (수동 설치)
+
+개발 환경을 직접 설정하세요.
 
 #### 1. 환경 변수 설정
 `.env` 파일 생성:
@@ -46,6 +60,12 @@ DB_PASSWORD=your_password
 JWT_SECRET=$(openssl rand -base64 32)
 ```
 
+**기능을 위한 환경 변수 (선택):**
+- `OPENAI_API_KEY`: STT, DALLE 이미지 생성 기능
+- `RecAWS_ACCESS_KEY_ID`, `RecAWS_SECRET_ACCESS_KEY`: S3 파일 저장
+- `GOOGLE_APPLICATION_CREDENTIALS`: OCR 기능
+- `MAIL_USERNAME`, `MAIL_PASSWORD`: 이메일 인증
+
 #### 2. 데이터베이스 설정
 ```bash
 psql -U postgres
@@ -54,80 +74,62 @@ CREATE USER recorduser WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE recorddb TO recorduser;
 ```
 
-#### 3. 의존성 설치
+#### 3. 의존성 설치 및 빌드 준비
 ```bash
 # Backend
 make be-install
 
 # Frontend
-make fe-install
+cd Record-FE && npm install
+cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 ```
-
-### 기능을 위한 환경 변수
-- `OPENAI_API_KEY`: STT, DALLE 이미지 생성 기능
-- `RecAWS_ACCESS_KEY_ID`, `RecAWS_SECRET_ACCESS_KEY`: S3 파일 저장
-- `GOOGLE_APPLICATION_CREDENTIALS`: OCR 기능
-- `MAIL_USERNAME`, `MAIL_PASSWORD`: 이메일 인증
 
 ## 빌드하기 : 프로젝트 컴파일
 
-### Backend 빌드
+### Backend
 ```bash
 make be-build
 ```
 
-### Frontend 빌드
-```bash
-cd Record-FE
-npm run android  # 또는 npm run ios
-```
+Frontend는 개발 환경 기준으로 `npm run ios` 실행 시  
+필요한 빌드 과정이 자동으로 수행되므로, 별도의 빌드 명령을 사용하지 않습니다.
 
 ## 실행하기 : 애플리케이션 실행
 
-### Backend 실행
 ```bash
+# Backend
 make be-run
-```
 
-### Frontend 실행
-```bash
-cd Record-FE
-npm start
-npm run ios  # 또는 npm run android
+# Frontend
+# 1. 개발 서버 실행 (Metro)
+cd Record-FE && npm start
+
+# 2. 앱 실행 (빌드 포함)
+cd Record-FE && npm run ios 
 ```
 
 ## 테스트하기 : 테스트 실행
 
 ```bash
-# Backend 테스트
+# Backend
 make be-test
 
-# Frontend 테스트
+# Frontend
 make fe-test
 ```
 
-## 샘플 데이터
-
-### 샘플 데이터 생성
-```bash
-cd Record-BE/Record-BE
-chmod +x generate-sample-data.sh
-./generate-sample-data.sh
-```
-
-### 생성되는 데이터
-- 사용자 3명 (admin@example.com, user1@example.com, user2@example.com)
-- 비밀번호: `password123` (모든 사용자 동일)
-- 뮤지컬 정보 3개 (레미제라블, 시카고, 위키드)
-- 티켓 데이터 3개
-- 리뷰 데이터 2개
-- 친구 관계 1개
 
 ## 데이터
 
 - **데이터베이스**: PostgreSQL 12+
 - **주요 테이블**: users, tickets, reviews, friendships, musical_db
 - **외부 서비스**: AWS S3, Google Cloud Vision API, OpenAI API
+
+## 의존성
+
+자세한 의존성 목록은 다음 파일을 확인하세요:
+- Backend: `Record-BE/Record-BE/build.gradle`
+- Frontend: `Record-FE/package.json`
 
 ## 오픈소스
 
