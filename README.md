@@ -18,35 +18,15 @@ chmod +x setup.sh
 
 ## 목차
 
-1. [빌드하기](#빌드하기)
-2. [설치하기](#설치하기)
-3. [테스트하기](#테스트하기)
-4. [샘플 데이터](#샘플-데이터)
-5. [데이터](#데이터)
-6. [오픈소스](#오픈소스)
+1. [설치하기](#설치하기)
+2. [빌드하기](#빌드하기)
+3. [실행하기](#실행하기)
+4. [테스트하기](#테스트하기)
+5. [샘플 데이터](#샘플-데이터)
+6. [데이터](#데이터)
+7. [오픈소스](#오픈소스)
 
-## 빌드하기
-
-### 전체 프로젝트 빌드
-```bash
-make build-all
-```
-
-### Backend 빌드
-```bash
-make be-build
-# 또는
-cd Record-BE/Record-BE && ./gradlew build
-```
-
-### Frontend 빌드
-```bash
-make fe-install
-# 또는
-cd Record-FE && npm run ios
-```
-
-## 설치하기
+## 설치하기 : 환경 설정 및 의존성 설치
 
 ### 자동 설치
 ```bash
@@ -74,19 +54,13 @@ CREATE USER recorduser WITH PASSWORD 'your_password';
 GRANT ALL PRIVILEGES ON DATABASE recorddb TO recorduser;
 ```
 
-#### 3. Backend 실행
+#### 3. 의존성 설치
 ```bash
-cd Record-BE/Record-BE
-make be-run
-# 또는
-./gradlew bootRun
-```
+# Backend
+make be-install
 
-#### 4. Frontend 실행
-```bash
-cd Record-FE
-npm start
-npm run ios
+# Frontend
+make fe-install
 ```
 
 ### 기능을 위한 환경 변수
@@ -95,12 +69,36 @@ npm run ios
 - `GOOGLE_APPLICATION_CREDENTIALS`: OCR 기능
 - `MAIL_USERNAME`, `MAIL_PASSWORD`: 이메일 인증
 
-## 테스트하기
+## 빌드하기 : 프로젝트 컴파일
+
+### Backend 빌드
+```bash
+make be-build
+```
+
+### Frontend 빌드
+```bash
+cd Record-FE
+npm run android  # 또는 npm run ios
+```
+
+## 실행하기 : 애플리케이션 실행
+
+### Backend 실행
+```bash
+make be-run
+```
+
+### Frontend 실행
+```bash
+cd Record-FE
+npm start
+npm run ios  # 또는 npm run android
+```
+
+## 테스트하기 : 테스트 실행
 
 ```bash
-# 전체 테스트
-make test-all
-
 # Backend 테스트
 make be-test
 
@@ -110,7 +108,7 @@ make fe-test
 
 ## 샘플 데이터
 
-### sh 파일로 샘플 데이터 생성 
+### 샘플 데이터 생성
 ```bash
 cd Record-BE/Record-BE
 chmod +x generate-sample-data.sh
@@ -147,28 +145,6 @@ chmod +x generate-sample-data.sh
 - **Jotai** 2.15.0 - MIT License
 - **Axios** 1.13.2 - MIT License
 - **TypeScript** 5.8.3 - Apache License 2.0
-
-## Scripts (sh 파일)
-
-### setup.sh
-전체 시스템 자동 설치 스크립트
-```bash
-cd Record-BE/Record-BE
-./setup.sh
-```
-
-### generate-sample-data.sh
-샘플 데이터 생성 스크립트
-```bash
-cd Record-BE/Record-BE
-./generate-sample-data.sh
-```
-
-### Makefile
-통합 빌드 스크립트
-```bash
-make help  # 사용 가능한 명령어 확인
-```
 
 ## 프로젝트 구조
 

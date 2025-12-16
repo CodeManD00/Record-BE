@@ -1,14 +1,9 @@
 # Record Project - 통합 Makefile
 
-.PHONY: help build-all test-all install-all be-install be-build be-run be-test be-clean be-jar fe-install fe-start fe-android fe-ios fe-test fe-lint fe-clean fe-clean-cache fe-pod-install clean
+.PHONY: help be-install be-build be-run be-test be-clean be-jar fe-install fe-start fe-android fe-ios fe-test fe-lint fe-clean fe-clean-cache fe-pod-install clean
 
 help:
-	@echo "Record Project - 통합 Makefile"
-	@echo ""
-	@echo "전체 프로젝트:"
-	@echo "  make build-all      - Backend + Frontend 모두 빌드"
-	@echo "  make test-all       - Backend + Frontend 모두 테스트"
-	@echo "  make install-all    - Backend + Frontend 모두 설치"
+	@echo "Record Project Makefile"
 	@echo ""
 	@echo "Backend:"
 	@echo "  make be-build       - Backend 빌드"
@@ -24,15 +19,6 @@ help:
 	@echo "  make fe-test        - Frontend 테스트"
 	@echo "  make fe-lint        - Frontend 린트 검사"
 	@echo "  make fe-clean       - Frontend 정리"
-
-build-all: be-build fe-install
-	@echo "✅ 전체 프로젝트 빌드 완료"
-
-test-all: be-test fe-test
-	@echo "✅ 전체 프로젝트 테스트 완료"
-
-install-all: be-install fe-install
-	@echo "✅ 전체 프로젝트 설치 완료"
 
 # Backend 명령어
 be-install:

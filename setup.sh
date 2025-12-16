@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Record Project - Proto-system 설치 스크립트
+# Record Project 설치 스크립트
 
 set -e
 
@@ -15,7 +15,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
 echo -e "${BLUE}========================================${NC}"
-echo -e "${BLUE}Record Project - Proto-system 설치${NC}"
+echo -e "${BLUE}Record Project 설치${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
@@ -170,7 +170,7 @@ echo ""
 
 # 7. 설치 완료
 echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}✅ Proto-system 설치 완료!${NC}"
+echo -e "${GREEN}✅ 설치 완료!${NC}"
 echo -e "${GREEN}========================================${NC}"
 echo ""
 echo -e "${BLUE}다음 단계:${NC}"
