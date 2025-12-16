@@ -17,7 +17,6 @@ help:
 	@echo "  make fe-install     - 의존성 설치 (cd Record-FE && npm install)"
 	@echo "  make fe-install-ios - iOS Pods 설치 (cd Record-FE/ios && bundle exec pod install)"
 	@echo "  make fe-start       - 개발 서버 실행 (Metro)"
-	@echo "  make fe-android     - 앱 실행 - Android (빌드 포함)"
 	@echo "  make fe-ios         - 앱 실행 - iOS (빌드 포함, macOS만)"
 	@echo "  make fe-test        - 테스트"
 	@echo "  make fe-lint        - 린트 검사"
