@@ -32,8 +32,15 @@ chmod +x setup.sh
 ./setup.sh
 ```
 
-설치 완료 후 샘플 데이터를 생성합니다:
+설치 완료 후 다음 단계를 진행하세요:
 
+**1. Frontend 의존성 설치 (Frontend 사용 시)**
+```bash
+cd Record-FE && npm install
+cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
+```
+
+**2. 샘플 데이터 생성 (선택)**
 ```bash
 chmod +x generate-sample-data.sh
 ./generate-sample-data.sh
