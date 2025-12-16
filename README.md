@@ -49,8 +49,6 @@ chmod +x generate-sample-data.sh
 
 ### 개발자 입장 (수동 설치)
 
-개발 환경을 직접 설정하세요.
-
 #### 1. 환경 변수 설정
 `.env` 파일 생성:
 ```bash
