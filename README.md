@@ -43,7 +43,7 @@ cd Record-BE/Record-BE && ./gradlew build
 ```bash
 make fe-install
 # 또는
-cd Record-FE && npm install
+cd Record-FE && npm run ios
 ```
 
 ## 설치하기
@@ -85,7 +85,7 @@ make be-run
 #### 4. Frontend 실행
 ```bash
 cd Record-FE
-npm install
+npm start
 npm run ios
 ```
 
