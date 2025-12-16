@@ -40,7 +40,7 @@ cd Record-FE && npm install
 cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 ```
 
-**2. 샘플 데이터 생성 (선택)**
+**2. 샘플 데이터 생성 **
 ```bash
 chmod +x generate-sample-data.sh
 ./generate-sample-data.sh
