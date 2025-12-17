@@ -57,7 +57,7 @@ cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 
 **먼저 디비 테이블을 꼭 생성하세요.**
 
-`Record-BE/Record-BE/schema.sql` 파일을 사용하여 데이터베이스 스키마를 생성하세요:
+`Record-BE/Record-BE/schema.sql` 파일을 사용하여 데이터베이스 스키마를 생성할 수 있습니다:
 
 ```bash
 psql -U recorduser -d recorddb -f "Record-BE/Record-BE/schema.sql"
