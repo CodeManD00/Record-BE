@@ -63,9 +63,7 @@ cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 psql -U recorduser -d recorddb -f "Record-BE/Record-BE/schema.sql"
 ```
 
-테이블 생성이 완료된 후, 아래 명령어로 샘플 데이터를 생성할 수 있습니다.
-
-개발 및 테스트를 위한 샘플 데이터를 생성할 수 있습니다.
+테이블 생성이 완료된 후, 아래 명령어로 개발 및 테스트를 위한 샘플 데이터를 생성할 수 있습니다.
 
 ```bash
 chmod +x generate-sample-data.sh
