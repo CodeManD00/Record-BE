@@ -2,12 +2,6 @@
 
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
-## 프로젝트 개요
-
-- **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
-- **Frontend**: React Native 0.81.0 (TypeScript)
-- **주요 기능**: 티켓 관리, OCR, STT, AI 이미지 생성, 리뷰 작성
-
 ## 목차
 
 1. [설치하기](#설치하기)
@@ -21,46 +15,6 @@
 
 ## 설치하기
 
-### 사용자 입장
-
-자동 설치 스크립트를 사용하여 환경 설정, Backend 의존성 설치 및 빌드까지 완료합니다.
-회원가입 없이 샘플 데이터로 바로 둘러볼 수 있습니다.
-Frontend는 개발 환경에서 별도 빌드 단계가 없으며, 실행 시 자동으로 빌드됩니다.
-
-```bash
-cd Record-BE/Record-BE
-chmod +x setup.sh
-./setup.sh
-```
-
-설치 완료 후 다음 단계를 진행하세요:
-
-**1. Frontend 의존성 설치**
-```bash
-cd Record-FE && npm install
-cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
-```
-
-**2. 샘플 데이터 생성**
-```bash
-chmod +x generate-sample-data.sh
-./generate-sample-data.sh
-```
-
-**생성되는 샘플 데이터:**
-- 사용자 3명 (admin@example.com, user1@example.com, user2@example.com)
-- 비밀번호: `password123` (모든 사용자 동일)
-- 뮤지컬 정보 3개 (레미제라블, 시카고, 위키드)
-- 티켓 데이터 3개
-- 리뷰 데이터 2개
-- 친구 관계 1개
-
-다음은 [실행하기](#실행하기) 섹션으로 이동하여 Backend와 Frontend를 실행하세요.
-
----
-
-### 개발자 입장 (수동 설치)
-
 #### 1. 환경 변수 설정
 `.env` 파일 생성:
 ```bash
@@ -69,6 +23,11 @@ DB_USER=recorduser
 DB_PASSWORD=your_password
 JWT_SECRET=$(openssl rand -base64 32)
 ```
+
+**⚠️ 중요: DB_URL 형식**
+- Spring Boot 애플리케이션은 JDBC URL 형식(`jdbc:postgresql://`)을 사용합니다
+- 샘플 데이터 스크립트(`generate-sample-data.sh`)는 JDBC URL과 일반 URL(`postgresql://`) 형식을 모두 지원합니다
+- 두 형식 모두 사용 가능: `jdbc:postgresql://localhost:5432/recorddb` 또는 `postgresql://localhost:5432/recorddb`
 
 **기능을 위한 환경 변수 (선택):**
 - `OPENAI_API_KEY`: STT, DALLE 이미지 생성 기능
@@ -93,6 +52,33 @@ make be-install
 cd Record-FE && npm install
 cd Record-FE/ios && bundle exec pod install  # iOS만 (macOS)
 ```
+
+#### 4. 샘플 데이터 활용 (선택사항)
+
+**먼저 디비 테이블을 꼭 생성하세요.**
+
+`Record-BE/Record-BE/schema.sql` 파일을 사용하여 데이터베이스 스키마를 생성하세요:
+
+```bash
+psql -U recorduser -d recorddb -f "Record-BE/Record-BE/schema.sql"
+```
+
+테이블 생성이 완료된 후, 아래 명령어로 샘플 데이터를 생성할 수 있습니다.
+
+개발 및 테스트를 위한 샘플 데이터를 생성할 수 있습니다.
+
+```bash
+chmod +x generate-sample-data.sh
+./generate-sample-data.sh
+```
+
+**생성되는 샘플 데이터:**
+- 사용자 3명 (admin@example.com, user1@example.com, user2@example.com)
+- 비밀번호: `password123` (모든 사용자 동일)
+- 뮤지컬 정보 3개 (레미제라블, 시카고, 위키드)
+- 티켓 데이터 3개
+- 리뷰 데이터 2개
+- 친구 관계 1개
 
 ## 빌드하기
 
@@ -172,7 +158,13 @@ Record-BE/
 │   │   └── AWS/            # S3 통합
 │   └── resources/
 │       └── application.yml
-├── setup.sh
 ├── generate-sample-data.sh
+├── schema.sql
 └── Makefile
 ```
+
+## 프로젝트 개요
+
+- **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
+- **Frontend**: React Native 0.81.0 (TypeScript)
+- **주요 기능**: 티켓 관리, OCR, STT, AI 이미지 생성, 리뷰 작성

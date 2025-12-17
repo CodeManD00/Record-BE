@@ -22,9 +22,12 @@ if [ -f .env ]; then
 fi
 
 # 데이터베이스 정보 확인
-DB_HOST=$(echo $DB_URL | sed -n 's/.*:\/\/\([^:]*\):\([^\/]*\)\/\(.*\)/\1/p' || echo "localhost")
-DB_PORT=$(echo $DB_URL | sed -n 's/.*:\/\/\([^:]*\):\([^\/]*\)\/\(.*\)/\2/p' || echo "5432")
-DB_NAME=$(echo $DB_URL | sed -n 's/.*:\/\/\([^:]*\):\([^\/]*\)\/\(.*\)/\3/p' || echo "recorddb")
+# JDBC URL (jdbc:postgresql://) 또는 일반 URL (postgresql://) 형식 모두 지원
+# JDBC prefix 제거 후 파싱
+CLEAN_URL=$(echo $DB_URL | sed 's|^jdbc:postgresql://|postgresql://|' | sed 's|^jdbc:||')
+DB_HOST=$(echo $CLEAN_URL | sed -n 's|.*://\([^:]*\):\([^/]*\)/\(.*\)|\1|p' || echo "localhost")
+DB_PORT=$(echo $CLEAN_URL | sed -n 's|.*://\([^:]*\):\([^/]*\)/\(.*\)|\2|p' || echo "5432")
+DB_NAME=$(echo $CLEAN_URL | sed -n 's|.*://\([^:]*\):\([^/]*\)/\(.*\)|\3|p' || echo "recorddb")
 
 if [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ]; then
     echo -e "${RED}❌ DB_USER 또는 DB_PASSWORD가 설정되지 않았습니다.${NC}"
@@ -56,23 +59,37 @@ INSERT INTO musical_db (title, summary, background, main_character_count, create
 ON CONFLICT DO NOTHING;
 
 INSERT INTO tickets (user_id, performance_title, venue, seat, artist, genre, view_date, image_url, is_public, created_at) VALUES
-('user001', '레미제라블', '샤롯데씨어터', '1층 A열 10번', '주연배우', 'MUSICAL', '2024-01-15', 'https://example.com/ticket1.jpg', true, NOW()),
-('user001', '시카고', '블루스퀘어', '2층 B열 5번', '주연배우', 'MUSICAL', '2024-02-20', 'https://example.com/ticket2.jpg', true, NOW()),
-('user002', '레미제라블', '샤롯데씨어터', '1층 C열 15번', '주연배우', 'MUSICAL', '2024-01-20', 'https://example.com/ticket3.jpg', false, NOW())
+('user001', '레미제라블', '샤롯데씨어터', '1층 A열 10번', '주연배우', 'MUSICAL', '2024-01-15', NULL, true, NOW()),
+('user001', '시카고', '블루스퀘어', '2층 B열 5번', '주연배우', 'MUSICAL', '2024-02-20', NULL, true, NOW()),
+('user002', '레미제라블', '샤롯데씨어터', '1층 C열 15번', '주연배우', 'MUSICAL', '2024-01-20', NULL, false, NOW())
 ON CONFLICT DO NOTHING;
 
-INSERT INTO reviews (ticket_id, summary, keywords, created_at) VALUES
-(1, '훌륭한 공연이었습니다! 음악과 연기가 모두 뛰어났어요.', '감동,음악,연기', NOW()),
-(2, '시카고의 분위기가 정말 좋았습니다. 재미있게 봤어요.', '재미,분위기,춤', NOW())
+INSERT INTO reviews (ticket_id, summary, keywords, created_at)
+SELECT 
+    t.id,
+    CASE 
+        WHEN t.performance_title = '레미제라블' AND t.user_id = 'user001' THEN '훌륭한 공연이었습니다! 음악과 연기가 모두 뛰어났어요.'
+        WHEN t.performance_title = '시카고' AND t.user_id = 'user001' THEN '시카고의 분위기가 정말 좋았습니다. 재미있게 봤어요.'
+    END,
+    CASE 
+        WHEN t.performance_title = '레미제라블' AND t.user_id = 'user001' THEN '감동,음악,연기'
+        WHEN t.performance_title = '시카고' AND t.user_id = 'user001' THEN '재미,분위기,춤'
+    END,
+    NOW()
+FROM tickets t
+WHERE (t.performance_title = '레미제라블' AND t.user_id = 'user001' AND t.view_date = '2024-01-15')
+   OR (t.performance_title = '시카고' AND t.user_id = 'user001' AND t.view_date = '2024-02-20')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO friendships (user_id, friend_id, status, created_at) VALUES
 ('user001', 'user002', 'ACCEPTED', NOW())
 ON CONFLICT (user_id, friend_id) DO NOTHING;
 
-INSERT INTO ticket_likes (ticket_id, user_id, created_at) VALUES
-(1, 'user002', NOW()),
-(2, 'user002', NOW())
+INSERT INTO ticket_likes (ticket_id, user_id, created_at)
+SELECT t.id, 'user002', NOW()
+FROM tickets t
+WHERE t.performance_title IN ('레미제라블', '시카고')
+  AND t.user_id = 'user001'
 ON CONFLICT (ticket_id, user_id) DO NOTHING;
 
 SELECT 'users' as table_name, COUNT(*) as count FROM users

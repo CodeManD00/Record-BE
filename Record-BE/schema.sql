@@ -1,5 +1,5 @@
 -- ============================================================================
--- Record Project - 데이터베이스 스키마 정의
+-- Record - 데이터베이스 스키마 정의
 -- ============================================================================
 --
 -- Sample/Proto-data 포함 (DB 스키마)
@@ -9,7 +9,7 @@
 -- - 프로젝트 재생성 시 데이터베이스 구조를 정의
 --
 -- 사용 방법:
---   psql -U recorduser -d recorddb -f "SQL for local DB"
+--   psql -U recorduser -d recorddb -f "schema.sql"
 --
 -- ============================================================================
 
@@ -147,6 +147,8 @@ CREATE TABLE IF NOT EXISTS transcription (
     summary_type VARCHAR(50),
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_transcription_user_id ON transcription(user_id);
 
 -- 12. api_key 테이블 (사용자별 OpenAI API 키)
 CREATE TABLE IF NOT EXISTS api_key (
