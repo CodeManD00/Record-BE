@@ -179,7 +179,7 @@ Record-BE/
 
 ## 프로젝트 개요 및 구조도
 
-![Uploading 구조도.png…]()
+<img width="1396" height="796" alt="구조도" src="https://github.com/user-attachments/assets/90c7efa8-fe40-4a9a-bc4a-ff3ec459ce27" />
 
 
 - **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
