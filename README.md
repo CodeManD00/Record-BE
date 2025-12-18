@@ -165,7 +165,7 @@ Record-BE/
 │   │   │   └── [루트 파일들]      # ApiKey, ApiKeyInterceptor 등
 │   │   └── resources/
 │   │       ├── application.yml
-│   │       └── static/            # 정적 리소스
+│   │       └── static/            
 │   ├── build.gradle
 │   └── settings.gradle
 ├── generate-sample-data.sh
