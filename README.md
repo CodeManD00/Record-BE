@@ -2,6 +2,10 @@
 
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
+
+## 화면 구성
+<img width="2887" height="5810" alt="화면 구성" src="https://github.com/user-attachments/assets/160d3aad-bc44-4f05-b83f-72a9cf4f5279" />
+
 ## 목차
 
 1. [설치하기](#설치하기)
@@ -173,7 +177,10 @@ Record-BE/
 └── Makefile
 ```
 
-## 프로젝트 개요
+## 프로젝트 개요 및 구조도
+
+![Uploading 구조도.png…]()
+
 
 - **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
 - **Frontend**: React Native 0.81.0 (TypeScript)
