@@ -173,39 +173,6 @@ Record-BE/
 └── Makefile
 ```
 
-### Frontend (Record-FE)
-```
-Record-FE/
-├── src/
-│   ├── assets/            # 이미지 리소스
-│   ├── atoms/              # Jotai 상태 관리
-│   ├── components/         # React 컴포넌트
-│   │   └── ui/            # UI 컴포넌트
-│   ├── constants/          # 상수 정의
-│   ├── hooks/              # 커스텀 훅
-│   ├── pages/              # 페이지 컴포넌트
-│   │   ├── add-ticket/    # 티켓 추가
-│   │   ├── archive/        # 아카이브
-│   │   ├── auth/           # 인증
-│   │   ├── calendar/       # 캘린더
-│   │   ├── home/           # 홈
-│   │   └── my-page/        # 마이페이지
-│   ├── services/           # API 및 서비스
-│   │   ├── api/           # API 클라이언트
-│   │   └── auth/          # 인증 서비스
-│   ├── styles/             # 스타일 정의
-│   ├── types/              # TypeScript 타입
-│   └── utils/              # 유틸리티 함수
-├── android/                
-├── ios/                    # iOS 네이티브
-├── App.tsx                 # 앱 진입점
-├── index.js               
-├── package.json
-├── tsconfig.json
-├── app.json
-└── Makefile
-```
-
 ## 프로젝트 개요
 
 - **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
