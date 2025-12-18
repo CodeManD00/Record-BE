@@ -3,9 +3,6 @@
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
 
-## 화면 구성
-<img width="2887" height="5810" alt="화면 구성" src="https://github.com/user-attachments/assets/160d3aad-bc44-4f05-b83f-72a9cf4f5279" />
-
 ## 목차
 
 1. [설치하기](#설치하기)
@@ -16,6 +13,8 @@
 6. [의존성](#의존성)
 7. [오픈소스](#오픈소스)
 8. [프로젝트 구조](#프로젝트-구조)
+9. [개요 및 시스템 구조도](#개요-및-시스템-구조도)
+10. [화면 구성](#화면-구성)
 
 ## 설치하기
 
@@ -177,7 +176,7 @@ Record-BE/
 └── Makefile
 ```
 
-## 프로젝트 개요 및 구조도
+## 개요 및 시스템 구조도
 
 <img width="1396" height="796" alt="구조도" src="https://github.com/user-attachments/assets/90c7efa8-fe40-4a9a-bc4a-ff3ec459ce27" />
 
@@ -185,3 +184,6 @@ Record-BE/
 - **Backend**: Spring Boot 3.2.5 (Java 21), PostgreSQL, JWT 인증
 - **Frontend**: React Native 0.81.0 (TypeScript)
 - **주요 기능**: 티켓 관리, OCR, STT, AI 이미지 생성, 리뷰 작성
+
+## 화면 구성
+<img width="2887" height="5810" alt="화면 구성" src="https://github.com/user-attachments/assets/160d3aad-bc44-4f05-b83f-72a9cf4f5279" />
