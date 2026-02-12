@@ -187,3 +187,7 @@ Record-BE/
 
 ## 화면 구성
 <img width="2887" height="5810" alt="화면 구성" src="https://github.com/user-attachments/assets/160d3aad-bc44-4f05-b83f-72a9cf4f5279" />
+
+
+## 시연 영상 
+https://www.youtube.com/shorts/8cX8Bl-vdps
