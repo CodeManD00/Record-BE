@@ -2,6 +2,12 @@
 
 공연 티켓 기록 및 리뷰 관리 시스템 - Full Stack 프로젝트
 
+## 시연 영상 
+https://www.youtube.com/shorts/8cX8Bl-vdps
+
+## 정리 자료 
+https://drive.google.com/file/d/1NSw3_fn-6nRhYWl-PArw9zoiIZLxrT0r/view?usp=sharing
+
 
 ## 목차
 
